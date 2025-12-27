@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}خانه | Mobix{% endblock %}
+
+{% block content %}
+<div class="text-center py-12">
+    <h1 class="text-4xl font-bold text-gray-800 mb-6">به Mobix خوش آمدید!</h1>
+    <p class="text-lg text-gray-600 mb-8">فروشگاه تخصصی موبایل و لوازم جانبی</p>
+    <a href="/products/" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+        مشاهده محصولات
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-xl font-bold text-gray-800 mb-3">محصولات با کیفیت</h3>
+        <p class="text-gray-600">با تضمین اصالت کالا</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-xl font-bold text-gray-800 mb-3">ارسال سریع</h3>
+        <p class="text-gray-600">تحویل در کمترین زمان</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-xl font-bold text-gray-800 mb-3">پشتیبانی ۲۴/۷</h3>
+        <p class="text-gray-600">همیشه در کنار شما</p>
+    </div>
+</div>
+{% endblock %}
