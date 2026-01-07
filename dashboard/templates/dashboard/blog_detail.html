@@ -1,0 +1,352 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}مقاله - {{ article.title }} | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'blog_list' %}" 
+                   class="text-gray-500 hover:text-gray-700 transition">
+                    <i class="ti ti-arrow-right text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">📖 مشاهده مقاله</h1>
+                    <p class="text-gray-600 mt-1">جزئیات کامل مقاله</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- دکمه‌های عملیاتی -->
+        <div class="flex items-center gap-3">
+            <!-- ویرایش -->
+            <a href="{% url 'blog_edit' article.id %}" 
+               class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all">
+                <i class="ti ti-edit"></i>
+                ویرایش مقاله
+            </a>
+            
+            <!-- بازگشت -->
+            <a href="{% url 'blog_list' %}" 
+               class="flex items-center gap-2 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-all">
+                <i class="ti ti-arrow-right"></i>
+                بازگشت به لیست
+            </a>
+        </div>
+    </div>
+    
+    <!-- نمایش پیام‌های سیستم -->
+    {% comment %} {% if messages %}
+    <div class="space-y-3">
+        {% for message in messages %}
+        <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200
+                                   {% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+            <div class="flex items-center">
+                <i class="ti {% if message.tags == 'success' %}ti-check{% else %}ti-alert-circle{% endif %} ml-2"></i>
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %} {% endcomment %}
+    
+    <!-- محتوای اصلی در دو ستون -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ستون چپ: محتوای مقاله -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- کارت اطلاعات اصلی -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">
+                    اطلاعات مقاله
+                </h2>
+                
+                <!-- عنوان -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">{{ article.title }}</h3>
+                </div>
+                
+                <!-- اطلاعات متا -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- نویسنده -->
+                    <div class="flex items-center p-3 bg-blue-50 rounded-xl">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">
+                            <i class="ti ti-user"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">نویسنده</p>
+                            <p class="font-medium">{{ article.author.get_full_name|default:article.author.username }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- دسته‌بندی -->
+                    <div class="flex items-center p-3 bg-green-50 rounded-xl">
+                        <div class="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center ml-3">
+                            <i class="ti ti-category"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">دسته‌بندی</p>
+                            <p class="font-medium">{{ article.get_category_display_fa }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- وضعیت -->
+                    <div class="flex items-center p-3 {% if article.status == 'published' %}bg-green-50{% else %}bg-amber-50{% endif %} rounded-xl">
+                        <div class="w-10 h-10 {% if article.status == 'published' %}bg-green-100 text-green-600{% else %}bg-amber-100 text-amber-600{% endif %} rounded-lg flex items-center justify-center ml-3">
+                            <i class="ti {% if article.status == 'published' %}ti-check{% else %}ti-edit{% endif %}"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">وضعیت</p>
+                            <p class="font-medium {% if article.status == 'published' %}text-green-700{% else %}text-amber-700{% endif %}">
+                                {% if article.status == 'published' %}منتشر شده{% else %}پیش‌نویس{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- تاریخ‌ها -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- تاریخ انتشار -->
+                    <div class="p-3 bg-gray-50 rounded-xl">
+                        <div class="flex items-center">
+                            <i class="ti ti-calendar text-gray-500 ml-2"></i>
+                            <div>
+                                <p class="text-sm text-gray-600">تاریخ انتشار</p>
+                                <p class="font-medium">{{ article.publish_date|date:"Y/m/d - H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تاریخ ایجاد -->
+                    <div class="p-3 bg-gray-50 rounded-xl">
+                        <div class="flex items-center">
+                            <i class="ti ti-clock text-gray-500 ml-2"></i>
+                            <div>
+                                <p class="text-sm text-gray-600">تاریخ ایجاد</p>
+                                <p class="font-medium">{{ article.created_at|date:"Y/m/d - H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- کارت محتوای مقاله -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">
+                    محتوای مقاله
+                </h2>
+                
+                <!-- عکس مقاله -->
+                {% if article.image %}
+                <div class="mb-6">
+                    <img src="{{ article.image.url }}" 
+                         alt="{{ article.title }}"
+                         class="w-full h-auto max-h-96 object-cover rounded-2xl border border-gray-200">
+                </div>
+                {% endif %}
+                
+                <!-- محتوای مقاله -->
+                <div class="prose max-w-none">
+                    {{ article.content|safe }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- ستون راست: آمار و عملیات -->
+        <div class="space-y-6">
+            <!-- کارت آمار -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">آمار مقاله</h3>
+                
+                <div class="space-y-4">
+                    <!-- بازدیدها -->
+                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-eye"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">تعداد بازدید</p>
+                                <p class="text-xl font-bold">{{ article.views }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تعداد کلمات -->
+                    <div class="p-3 bg-gray-50 rounded-xl">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-600">تعداد کلمات</p>
+                                <p class="text-xl font-bold">
+                                    {{ article.content|wordcount }}
+                                </p>
+                            </div>
+                            <div class="text-gray-500">
+                                <i class="ti ti-file-text text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- زمان مطالعه -->
+                    <div class="p-3 bg-gray-50 rounded-xl">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-600">زمان مطالعه</p>
+                                <p class="text-xl font-bold">
+                                    {% widthratio article.content|wordcount 200 1 %} دقیقه
+                                </p>
+                            </div>
+                            <div class="text-gray-500">
+                                <i class="ti ti-clock text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- کارت عملیات سریع -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">عملیات سریع</h3>
+                
+                <div class="space-y-3">
+                    <!-- تغییر وضعیت -->
+                    <form method="post" action="{% url 'toggle_article_status' article.id %}" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                onclick="return confirm('آیا از تغییر وضعیت مقاله مطمئنید؟')"
+                                class="w-full flex items-center justify-center gap-2 
+                                    {% if article.status == 'published' %}bg-amber-50 text-amber-700 hover:bg-amber-100
+                                    {% else %}bg-green-50 text-green-700 hover:bg-green-100{% endif %} 
+                                    font-medium py-2.5 px-4 rounded-xl transition-all">
+                            <i class="ti {% if article.status == 'published' %}ti-edit{% else %}ti-check{% endif %}"></i>
+                            {% if article.status == 'published' %}تغییر به پیش‌نویس{% else %}انتشار مقاله{% endif %}
+                        </button>
+                    </form>
+                    
+                    <!-- مشاهده در سایت -->
+                    <a href="{% url 'blog_detail_view' article.id %}" 
+                       target="_blank"
+                       class="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium py-2.5 px-4 rounded-xl transition-all">
+                        <i class="ti ti-external-link"></i>
+                        مشاهده در سایت
+                    </a>
+                    
+                    <!-- حذف مقاله -->
+                    <form method="post" action="{% url 'blog_delete' article.id %}" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                onclick="return confirm('آیا از حذف این مقاله مطمئنید؟ این عمل غیرقابل بازگشت است!')"
+                                class="w-full flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-100 font-medium py-2.5 px-4 rounded-xl transition-all">
+                            <i class="ti ti-trash"></i>
+                            حذف مقاله
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- کارت اطلاعات فنی -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">اطلاعات فنی</h3>
+                
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">ID مقاله:</span>
+                        <code class="bg-gray-100 px-2 py-1 rounded">{{ article.id }}</code>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">آخرین ویرایش:</span>
+                        <span class="font-medium">{{ article.updated_at|date:"Y/m/d H:i" }}</span>
+                    </div>
+                    
+                    {% if article.image %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">سایز تصویر:</span>
+                        <span class="font-medium">{{ article.image.width }} × {{ article.image.height }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* استایل برای محتوای مقاله */
+.prose {
+    font-family: Vazir, sans-serif;
+    line-height: 1.8;
+    color: #374151;
+}
+
+.prose h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+.prose h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #1f2937;
+}
+
+.prose p {
+    margin-bottom: 1rem;
+    text-align: justify;
+}
+
+.prose ul, .prose ol {
+    margin-right: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    margin: 1rem 0;
+}
+
+/* انیمیشن‌ها */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.5s ease-out;
+}
+</style>
+
+<script>
+// کپی ID مقاله
+function copyArticleId() {
+    const articleId = '{{ article.id }}';
+    navigator.clipboard.writeText(articleId).then(() => {
+        // نمایش پیام موفقیت
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 left-4 bg-green-600 text-white px-4 py-2 rounded-xl shadow-lg';
+        toast.textContent = 'ID مقاله کپی شد: ' + articleId;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    });
+}
+</script>
+
+{% endblock %}

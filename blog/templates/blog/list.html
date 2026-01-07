@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}مقالات آموزشی موبایل | Mobix{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- هدر -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">مقالات آموزشی موبایل</h1>
+        <p class="text-gray-600 max-w-3xl mx-auto">
+            جدیدترین مطالب آموزشی، بررسی‌ها، راهنمای خرید و اخبار دنیای موبایل و تکنولوژی
+        </p>
+    </div>
+
+    <!-- فیلتر دسته‌بندی -->
+    <div class="mb-8 flex flex-wrap gap-4 justify-center">
+        <a href="{% url 'blog_list_view' %}" 
+           class="px-6 py-2 rounded-full {% if not request.GET.category %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition">
+            همه مقالات
+        </a>
+        {% for code, name in categories.items %}
+        <a href="?category={{ code }}" 
+           class="px-6 py-2 rounded-full {% if request.GET.category == code %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition">
+            {{ name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- آمار -->
+    <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8">
+        <div class="flex justify-between items-center">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600">{{ total_articles }}</div>
+                <div class="text-gray-600">مقاله منتشر شده</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-purple-600">{{ categories|length }}</div>
+                <div class="text-gray-600">دسته‌بندی</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-600">{% widthratio total_articles 1 100 %}+</div>
+                <div class="text-gray-600">بازدید روزانه</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- لیست مقالات -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        {% for article in articles %}
+        <article class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 card-hover">
+            <!-- عکس مقاله -->
+            <a href="{% url 'blog_detail_view' article.id %}">
+                <div class="h-56 overflow-hidden">
+                    {% if article.image %}
+                    <img src="{{ article.image.url }}" 
+                         alt="{{ article.title }}" 
+                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                    {% else %}
+                    <div class="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                        <i class="ti ti-news text-white text-6xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            
+            <!-- محتوای مقاله -->
+            <div class="p-6">
+                <!-- دسته‌بندی و تاریخ -->
+                <div class="flex justify-between items-center mb-4">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
+                        {{ article.get_category_display_fa }}
+                    </span>
+                    <span class="text-gray-500 text-sm">
+                        <i class="ti ti-calendar ml-1"></i>
+                        {{ article.publish_date|date:"Y/m/d" }}
+                    </span>
+                </div>
+                
+                <!-- عنوان -->
+                <h2 class="text-xl font-bold text-gray-800 mb-3 line-clamp-2">
+                    <a href="{% url 'blog_detail_view' article.id %}" class="hover:text-blue-600 transition">
+                        {{ article.title }}
+                    </a>
+                </h2>
+                
+                <!-- خلاصه محتوا -->
+                <p class="text-gray-600 mb-4 line-clamp-3">
+                    {{ article.content|striptags|truncatechars:150 }}
+                </p>
+                
+                <!-- نویسنده و بازدید -->
+                <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <div class="flex items-center">
+                        <i class="ti ti-user text-gray-400 ml-2"></i>
+                        <span class="text-gray-700">{{ article.author.get_full_name|default:article.author.username }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="ti ti-eye text-gray-400 ml-2"></i>
+                        <span class="text-gray-700">{{ article.views }}</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <div class="col-span-3 text-center py-12">
+            <i class="ti ti-news-off text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl text-gray-600">مقاله‌ای یافت نشد</h3>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- صفحه‌بندی -->
+    {% if articles.has_other_pages %}
+    <div class="flex justify-center gap-2">
+        {% if articles.has_previous %}
+        <a href="?page={{ articles.previous_page_number }}" 
+           class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+            <i class="ti ti-chevron-right"></i>
+        </a>
+        {% endif %}
+        
+        {% for num in articles.paginator.page_range %}
+            {% if articles.number == num %}
+            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">{{ num }}</span>
+            {% elif num > articles.number|add:'-3' and num < articles.number|add:'3' %}
+            <a href="?page={{ num }}" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if articles.has_next %}
+        <a href="?page={{ articles.next_page_number }}" 
+           class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+            <i class="ti ti-chevron-left"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

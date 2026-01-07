@@ -1,0 +1,347 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}پیشخوان مدیریت | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">پیشخوان مدیریت</h1>
+            <p class="text-gray-600 mt-1">خلاصه‌ای از فعالیت‌های سایت Mobix</p>
+        </div>
+        <div class="flex items-center space-x-3 space-x-reverse">
+            <span class="text-sm text-gray-500">
+                <i class="ti ti-calendar ml-1"></i>
+                امروز: {% now "j F Y" %}
+            </span>
+            <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all">
+                <i class="ti ti-plus"></i>
+                ایجاد جدید
+            </button>
+        </div>
+    </div>
+    
+    <!-- کارت‌های آماری -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- کارت سفارشات کل -->
+        <div class="stat-card bg-white rounded-2xl shadow-lg border border-gray-200 p-6 border-t-4 border-t-blue-500">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-gray-500 text-sm mb-1">کل سفارشات</p>
+                    <p class="text-3xl font-bold text-gray-900">1,۲۴۸</p>
+                </div>
+                <div class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <i class="ti ti-shopping-cart text-2xl text-blue-600"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-green-600 flex items-center">
+                    <i class="ti ti-trending-up ml-1"></i>
+                    ۱۲٫۵٪+
+                </span>
+                <span class="text-gray-500 mr-auto">از ماه گذشته</span>
+            </div>
+        </div>
+        
+        <!-- کارت سفارشات در انتظار -->
+        <div class="stat-card bg-white rounded-2xl shadow-lg border border-gray-200 p-6 border-t-4 border-t-amber-500">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-gray-500 text-sm mb-1">در انتظار پردازش</p>
+                    <p class="text-3xl font-bold text-gray-900">۴۲</p>
+                </div>
+                <div class="w-14 h-14 rounded-xl bg-amber-100 flex items-center justify-center">
+                    <i class="ti ti-clock text-2xl text-amber-600"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-red-600 flex items-center">
+                    <i class="ti ti-alert-circle ml-1"></i>
+                    نیاز به توجه
+                </span>
+                <a href="#" class="text-blue-600 mr-auto hover:text-blue-800">مشاهده</a>
+            </div>
+        </div>
+        
+        <!-- کارت سفارشات تکمیل شده -->
+        <div class="stat-card bg-white rounded-2xl shadow-lg border border-gray-200 p-6 border-t-4 border-t-green-500">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-gray-500 text-sm mb-1">تکمیل شده</p>
+                    <p class="text-3xl font-bold text-gray-900">۱,۱۸۹</p>
+                </div>
+                <div class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
+                    <i class="ti ti-check text-2xl text-green-600"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-green-600 flex items-center">
+                    <i class="ti ti-trending-up ml-1"></i>
+                    ۸٫۳٪+
+                </span>
+                <span class="text-gray-500 mr-auto">نرخ موفقیت</span>
+            </div>
+        </div>
+        
+        <!-- کارت درآمد -->
+        <div class="stat-card bg-white rounded-2xl shadow-lg border border-gray-200 p-6 border-t-4 border-t-purple-500">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-gray-500 text-sm mb-1">درآمد این ماه</p>
+                    <p class="text-3xl font-bold text-gray-900">۱۲۴٫۵M</p>
+                    <p class="text-gray-500 text-sm">تومان</p>
+                </div>
+                <div class="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <i class="ti ti-currency-toman text-2xl text-purple-600"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-green-600 flex items-center">
+                    <i class="ti ti-trending-up ml-1"></i>
+                    ۲۳٫۱٪+
+                </span>
+                <span class="text-gray-500 mr-auto">از ماه گذشته</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- دو ستون اصلی -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ستون چپ - سفارشات اخیر -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-gray-900">سفارشات اخیر</h2>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">
+                            مشاهده همه
+                            <i class="ti ti-chevron-left"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full admin-table">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">شماره سفارش</th>
+                                <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">مشتری</th>
+                                <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">تاریخ</th>
+                                <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">مبلغ</th>
+                                <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">وضعیت</th>
+                                <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <!-- سفارش ۱ -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6">
+                                    <span class="font-medium text-gray-900">#ORD-7842</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center ml-3">
+                                            <span class="text-blue-600 font-bold text-sm">ع</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">علی محمدی</p>
+                                            <p class="text-gray-500 text-sm">ali@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="text-gray-700">۲ ساعت پیش</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="font-medium">۴,۲۵۰,۰۰۰ تومان</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <i class="ti ti-check text-xs ml-1"></i>
+                                        تکمیل شده
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <button class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition">
+                                        <i class="ti ti-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- سفارش ۲ -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6">
+                                    <span class="font-medium text-gray-900">#ORD-7841</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center ml-3">
+                                            <span class="text-green-600 font-bold text-sm">ف</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">فاطمه کریمی</p>
+                                            <p class="text-gray-500 text-sm">fatemeh@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="text-gray-700">۵ ساعت پیش</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="font-medium">۲,۸۰۰,۰۰۰ تومان</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
+                                        <i class="ti ti-clock text-xs ml-1"></i>
+                                        در حال پردازش
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <button class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition">
+                                        <i class="ti ti-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- سفارش ۳ -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6">
+                                    <span class="font-medium text-gray-900">#ORD-7840</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center ml-3">
+                                            <span class="text-purple-600 font-bold text-sm">م</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">محمد رضایی</p>
+                                            <p class="text-gray-500 text-sm">mohammad@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="text-gray-700">دیروز</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="font-medium">۱,۵۰۰,۰۰۰ تومان</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                        <i class="ti ti-x text-xs ml-1"></i>
+                                        لغو شده
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <button class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition">
+                                        <i class="ti ti-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- سفارش ۴ -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6">
+                                    <span class="font-medium text-gray-900">#ORD-7839</span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center ml-3">
+                                            <span class="text-pink-600 font-bold text-sm">ز</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">زهرا احمدی</p>
+                                            <p class="text-gray-500 text-sm">zahra@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="text-gray-700">۲ روز پیش</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <p class="font-medium">۳,۷۵۰,۰۰۰ تومان</p>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <i class="ti ti-truck text-xs ml-1"></i>
+                                        ارسال شده
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <button class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition">
+                                        <i class="ti ti-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ستون راست - فعالیت‌های اخیر -->
+        <div>
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">فعالیت‌های اخیر</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-6">
+                        <!-- فعالیت ۱ -->
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0 ml-3">
+                                <i class="ti ti-user-plus text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">کاربر جدید ثبت‌نام کرد</p>
+                                <p class="text-gray-600 text-sm mt-1">مریم حسینی حساب کاربری ایجاد کرد</p>
+                                <p class="text-gray-500 text-xs mt-2">۱۵ دقیقه پیش</p>
+                            </div>
+                        </div>
+                        
+                        <!-- فعالیت ۲ -->
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0 ml-3">
+                                <i class="ti ti-shopping-cart text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">سفارش جدید ثبت شد</p>
+                                <p class="text-gray-600 text-sm mt-1">سفارش #ORD-7842 با موفقیت ثبت شد</p>
+                                <p class="text-gray-500 text-xs mt-2">۲ ساعت پیش</p>
+                            </div>
+                        </div>
+                        
+                        <!-- فعالیت ۳ -->
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 ml-3">
+                                <i class="ti ti-discount text-amber-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">تخفیف جدید اضافه شد</p>
+                                <p class="text-gray-600 text-sm mt-1">کد تخفیف "Mobix1403" ایجاد شد</p>
+                                <p class="text-gray-500 text-xs mt-2">۵ ساعت پیش</p>
+                            </div>
+                        </div>
+                        
+                        <!-- فعالیت ۴ -->
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0 ml-3">
+                                <i class="ti ti-message-circle text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">پیام جدید دریافت شد</p>
+                                <p class="text-gray-600 text-sm mt-1">پیام جدید از طریق فرم تماس ارسال شد</p>
+                                <p class="text-gray-500 text-xs mt-2">دیروز</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-6 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 rounded-xl transition-all">
+                        مشاهده همه فعالیت‌ها
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

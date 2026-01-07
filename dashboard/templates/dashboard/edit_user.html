@@ -1,0 +1,474 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}ویرایش کاربر {{ user.username }} | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'user_detail' user.id %}" 
+               class="text-gray-500 hover:text-gray-700 transition">
+                <i class="ti ti-arrow-right text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">✏️ ویرایش کاربر</h1>
+                <p class="text-gray-600 mt-1">به‌روزرسانی اطلاعات حساب کاربری</p>
+            </div>
+        </div>
+        
+        <!-- دکمه بازگشت -->
+        <a href="{% url 'user_detail' user.id %}" 
+           class="flex items-center gap-2 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-all">
+            <i class="ti ti-arrow-right"></i>
+            بازگشت به جزئیات
+        </a>
+    </div>
+    
+    <!-- نمایش پیام‌ها -->
+    {% if messages %}
+    <div class="space-y-3">
+        {% for message in messages %}
+        <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200
+                                   {% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+            <div class="flex items-center">
+                <i class="ti {% if message.tags == 'success' %}ti-check{% else %}ti-alert-circle{% endif %} ml-2"></i>
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- فرم ویرایش در دو ستون -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ستون چپ: فرم ویرایش -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200">
+                <!-- تب‌های فرم -->
+                <div class="border-b border-gray-200">
+                    <div class="flex overflow-x-auto">
+                        <button class="tab-btn active px-6 py-4 font-medium text-blue-600 border-b-2 border-blue-600 whitespace-nowrap" 
+                                onclick="showTab('basic')">
+                            <i class="ti ti-user ml-2"></i>
+                            اطلاعات اصلی
+                        </button>
+                        <button class="tab-btn px-6 py-4 font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" 
+                                onclick="showTab('profile')">
+                            <i class="ti ti-id ml-2"></i>
+                            پروفایل
+                        </button>
+                        <button class="tab-btn px-6 py-4 font-medium text-gray-500 hover:text-gray-700 whitespace-nowrap" 
+                                onclick="showTab('access')">
+                            <i class="ti ti-shield ml-2"></i>
+                            دسترسی‌ها
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- فرم -->
+                <form method="POST" class="p-6" id="editUserForm">
+                    {% csrf_token %}
+                    
+                    <!-- تب ۱: اطلاعات اصلی -->
+                    <div id="tab-basic" class="tab-content space-y-6">
+                        <div class="border border-gray-200 rounded-2xl p-5">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4">اطلاعات کاربری</h3>
+                            
+                            <!-- نام کاربری (غیرقابل تغییر) -->
+                            <div class="mb-6">
+                                <label class="block text-gray-700 mb-2 font-medium">نام کاربری</label>
+                                <input type="text" 
+                                       value="{{ user.username }}"
+                                       class="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none transition"
+                                       disabled
+                                       readonly>
+                                <p class="text-gray-500 text-sm mt-2">نام کاربری قابل تغییر نیست.</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- نام -->
+                                <div>
+                                    <label class="block text-gray-700 mb-2 font-medium">نام</label>
+                                    {{ user_form.first_name }}
+                                    {% if user_form.first_name.errors %}
+                                    <div class="text-red-600 text-sm mt-2">
+                                        {{ user_form.first_name.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- نام خانوادگی -->
+                                <div>
+                                    <label class="block text-gray-700 mb-2 font-medium">نام خانوادگی</label>
+                                    {{ user_form.last_name }}
+                                    {% if user_form.last_name.errors %}
+                                    <div class="text-red-600 text-sm mt-2">
+                                        {{ user_form.last_name.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- ایمیل -->
+                                <div class="md:col-span-2">
+                                    <label class="block text-gray-700 mb-2 font-medium">ایمیل</label>
+                                    {{ user_form.email }}
+                                    {% if user_form.email.errors %}
+                                    <div class="text-red-600 text-sm mt-2">
+                                        {{ user_form.email.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تب ۲: اطلاعات پروفایل -->
+                    <div id="tab-profile" class="tab-content space-y-6 hidden">
+                        <div class="border border-gray-200 rounded-2xl p-5">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4">اطلاعات پروفایل</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- شماره تلفن -->
+                                <div>
+                                    <label class="block text-gray-700 mb-2 font-medium">تلفن همراه</label>
+                                    {{ profile_form.phone }}
+                                    {% if profile_form.phone.errors %}
+                                    <div class="text-red-600 text-sm mt-2">
+                                        {{ profile_form.phone.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <p class="text-gray-500 text-sm mt-2">مثال: 09123456789</p>
+                                </div>
+                                
+                                <!-- آدرس -->
+                                <div class="md:col-span-2">
+                                    <label class="block text-gray-700 mb-2 font-medium">آدرس</label>
+                                    {{ profile_form.address }}
+                                    {% if profile_form.address.errors %}
+                                    <div class="text-red-600 text-sm mt-2">
+                                        {{ profile_form.address.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تب ۳: تنظیمات دسترسی -->
+                    <div id="tab-access" class="tab-content space-y-6 hidden">
+                        <div class="border border-gray-200 rounded-2xl p-5">
+                            <h3 class="font-bold text-lg text-gray-800 mb-4">تنظیمات دسترسی</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- وضعیت حساب -->
+                                <div>
+                                    <label class="block text-gray-700 mb-3 font-medium">وضعیت حساب</label>
+                                    <div class="space-y-3">
+                                        <label class="flex items-center">
+                                            <input type="radio" 
+                                                   name="is_active" 
+                                                   value="true"
+                                                   {% if user.is_active %}checked{% endif %}
+                                                   class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                            <span class="mr-2 text-gray-700">فعال</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="radio" 
+                                                   name="is_active" 
+                                                   value="false"
+                                                   {% if not user.is_active %}checked{% endif %}
+                                                   class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                            <span class="mr-2 text-gray-700">غیرفعال</span>
+                                        </label>
+                                    </div>
+                                    <p class="text-gray-500 text-sm mt-3">کاربران غیرفعال نمی‌توانند وارد سیستم شوند.</p>
+                                </div>
+                                
+                                <!-- نقش کاربر -->
+                                <div>
+                                    <label class="block text-gray-700 mb-3 font-medium">نقش کاربر</label>
+                                    <div class="space-y-3">
+                                        <label class="flex items-center">
+                                            <input type="radio" 
+                                                   name="is_staff" 
+                                                   value="false"
+                                                   {% if not user.is_staff %}checked{% endif %}
+                                                   class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                            <span class="mr-2 text-gray-700">کاربر عادی</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="radio" 
+                                                   name="is_staff" 
+                                                   value="true"
+                                                   {% if user.is_staff %}checked{% endif %}
+                                                   class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                            <span class="mr-2 text-gray-700">مدیر سیستم</span>
+                                        </label>
+                                    </div>
+                                    <p class="text-gray-500 text-sm mt-3">مدیران به داشبورد دسترسی دارند.</p>
+                                </div>
+                                
+                                <!-- سوپرادمین -->
+                                <div>
+                                    <label class="block text-gray-700 mb-3 font-medium">سطح دسترسی</label>
+                                    <div class="space-y-3">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" 
+                                                   name="is_superuser" 
+                                                   value="true"
+                                                   {% if user.is_superuser %}checked{% endif %}
+                                                   class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                            <span class="mr-2 text-gray-700">سوپرادمین</span>
+                                        </label>
+                                    </div>
+                                    <p class="text-gray-500 text-sm mt-3">دسترسی کامل به همه بخش‌های مدیریت.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- دکمه‌های ذخیره -->
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
+                        <!-- لغو -->
+                        <a href="{% url 'user_detail' user.id %}" 
+                           class="order-2 sm:order-1 w-full sm:w-auto px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-center">
+                            لغو و بازگشت
+                        </a>
+                        
+                        <!-- ذخیره تغییرات -->
+                        <button type="submit" 
+                                class="order-1 sm:order-2 w-full sm:w-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition shadow hover:shadow-lg">
+                            <i class="ti ti-device-floppy ml-2"></i>
+                            ذخیره تغییرات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- ستون راست: پیش‌نمایش -->
+        <div class="space-y-6">
+            <!-- کارت پیش‌نمایش -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">پیش‌نمایش پروفایل</h3>
+                
+                <div class="text-center p-4 border-2 border-dashed border-gray-300 rounded-xl">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full 
+                        {% if user.is_staff %}bg-gradient-to-r from-purple-400 to-pink-500
+                        {% else %}bg-gradient-to-r from-blue-400 to-cyan-500{% endif %} 
+                        flex items-center justify-center">
+                        <span class="text-white text-2xl font-bold">
+                            {{ user.username|first|upper }}
+                        </span>
+                    </div>
+                    
+                    <div id="previewFullName" class="text-xl font-bold text-gray-800 mb-2">
+                        {% if user.first_name or user.last_name %}
+                        {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                        {{ user.username }}
+                        {% endif %}
+                    </div>
+                    <div class="text-gray-600 mb-4">
+                        @{{ user.username }}
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-gray-500">وضعیت</div>
+                            <div id="previewStatus" class="font-medium 
+                                {% if user.is_active %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if user.is_active %}فعال{% else %}غیرفعال{% endif %}
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-gray-500">نقش</div>
+                            <div id="previewRole" class="font-medium">
+                                {% if user.is_superuser %}سوپرادمین
+                                {% elif user.is_staff %}مدیر
+                                {% else %}کاربر عادی{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-xs text-gray-500">
+                        <i class="ti ti-clock ml-1"></i>
+                        آخرین به‌روزرسانی: اکنون
+                    </div>
+                </div>
+                
+                <!-- اطلاعات سیستم -->
+                <div class="mt-6 space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">ایجاد حساب:</span>
+                        <span class="font-medium">{{ user.date_joined|date:"Y/m/d" }}</span>
+                    </div>
+                    {% if user.last_login %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">آخرین ورود:</span>
+                        <span class="font-medium">{{ user.last_login|timesince }} پیش</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- کارت راهنما -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">نکات ویرایش</h3>
+                
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-start">
+                        <i class="ti ti-info-circle text-blue-500 ml-2 mt-0.5"></i>
+                        <span class="text-gray-700">نام کاربری قابل تغییر نیست.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-user text-green-500 ml-2 mt-0.5"></i>
+                        <span class="text-gray-700">ایمیل باید یکتا باشد.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-shield text-purple-500 ml-2 mt-0.5"></i>
+                        <span class="text-gray-700">تغییر دسترسی‌ها بلافاصله اعمال می‌شود.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-alert-triangle text-amber-500 ml-2 mt-0.5"></i>
+                        <span class="text-gray-700">کاربر غیرفعال نمی‌تواند وارد سیستم شود.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== مدیریت تب‌ها ====================
+function showTab(tabName) {
+    // مخفی کردن همه تب‌ها
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+    
+    // غیرفعال کردن همه دکمه‌های تب
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'text-blue-600', 'border-blue-600');
+        btn.classList.add('text-gray-500');
+    });
+    
+    // نمایش تب انتخاب شده
+    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+    
+    // فعال کردن دکمه تب
+    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+        btn.textContent.includes(tabName === 'basic' ? 'اطلاعات اصلی' : 
+                                tabName === 'profile' ? 'پروفایل' : 'دسترسی‌ها'));
+    
+    if (activeBtn) {
+        activeBtn.classList.add('active', 'text-blue-600', 'border-blue-600');
+        activeBtn.classList.remove('text-gray-500');
+    }
+}
+
+// ==================== به‌روزرسانی پیش‌نمایش ====================
+function updatePreview() {
+    // اطلاعات تب اطلاعات اصلی
+    const firstName = document.querySelector('input[name="first_name"]').value;
+    const lastName = document.querySelector('input[name="last_name"]').value;
+    
+    if (firstName || lastName) {
+        document.getElementById('previewFullName').textContent = 
+            (firstName || '') + ' ' + (lastName || '');
+    }
+    
+    // اطلاعات تب دسترسی‌ها
+    const isActive = document.querySelector('input[name="is_active"]:checked')?.value === 'true';
+    const isStaff = document.querySelector('input[name="is_staff"]:checked')?.value === 'true';
+    const isSuperuser = document.querySelector('input[name="is_superuser"]')?.checked || false;
+    
+    // وضعیت
+    const statusElem = document.getElementById('previewStatus');
+    statusElem.textContent = isActive ? 'فعال' : 'غیرفعال';
+    statusElem.className = isActive ? 'font-medium text-green-600' : 'font-medium text-red-600';
+    
+    // نقش
+    const roleElem = document.getElementById('previewRole');
+    if (isSuperuser) {
+        roleElem.textContent = 'سوپرادمین';
+    } else if (isStaff) {
+        roleElem.textContent = 'مدیر';
+    } else {
+        roleElem.textContent = 'کاربر عادی';
+    }
+}
+
+// ==================== رویدادهای تغییر ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // به‌روزرسانی پیش‌نمایش با تغییر فرم
+    const formInputs = document.querySelectorAll('#editUserForm input, #editUserForm textarea');
+    formInputs.forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+    
+    // بارگذاری اولیه پیش‌نمایش
+    updatePreview();
+    
+    // اعتبارسنجی ایمیل
+    const emailInput = document.querySelector('input[name="email"]');
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            const email = this.value.trim();
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('لطفاً یک ایمیل معتبر وارد کنید.');
+                this.focus();
+            }
+        });
+    }
+    
+    // اعتبارسنجی تلفن
+    const phoneInput = document.querySelector('input[name="phone"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('blur', function() {
+            const phone = this.value.trim();
+            if (phone && !/^09[0-9]{9}$/.test(phone.replace(/\D/g, ''))) {
+                alert('لطفاً یک شماره تلفن معتبر وارد کنید (مثال: 09123456789).');
+                this.focus();
+            }
+        });
+    }
+});
+</script>
+
+<style>
+/* استایل‌های تب‌ها */
+.tab-btn {
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    font-weight: 600;
+}
+
+.tab-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* استایل‌های فرم */
+input:disabled {
+    background-color: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+</style>
+{% endblock %}

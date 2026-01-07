@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}درباره ما | Mobix{% endblock %}
+
+{% block content %}
+    <main class="container mx-auto px-4 py-12">
+        <!-- هدینگ اصلی -->
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                درباره Mobix
+            </h1>
+            <p class="text-gray-600 text-lg max-w-3xl mx-auto">
+                با ۱۰ سال تجربه درخشان در زمینه فروش موبایل و لوازم جانبی، همراهی مطمئن برای انتخاب بهترین‌ها
+            </p>
+        </div>
+
+        <!-- بخش داستان ما -->
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-20">
+            <div class="order-2 md:order-1">
+                <div class="relative">
+                    <img src="/static/images/about-us-image.png" 
+                         alt="تیم Mobix" 
+                         class="rounded-2xl shadow-2xl">
+                    <div class="absolute -bottom-6 -right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl">
+                        <div class="text-3xl font-bold">۱۰+</div>
+                        <div class="text-sm">سال تجربه</div>
+                    </div>
+                </div>
+            </div>
+            <div class="order-1 md:order-2">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">داستان ما</h2>
+                <div class="space-y-4 text-gray-600 leading-relaxed">
+                    <p>
+                        Mobix در سال ۱۳۹۲ با یک ایده ساده اما قدرتمند شروع به کار کرد: ایجاد یک تجربه خرید متفاوت و به یاد ماندنی در حوزه موبایل و تکنولوژی.
+                    </p>
+                    <p>
+                        ما معتقدیم خرید موبایل نباید فقط یک تراکنش مالی باشد، بلکه باید یک سفر تجربه‌محور باشد که در آن مشتری با اطمینان کامل بهترین انتخاب را داشته باشد.
+                    </p>
+                    <p>
+                        از یک فروشگاه کوچک در تهران شروع کردیم و امروز با افتخار به یکی از معتبرترین فروشگاه‌های آنلاین موبایل در ایران تبدیل شده‌ایم.
+                    </p>
+                </div>
+                
+                <!-- ویژگی‌ها -->
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="ti ti-award text-blue-600"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">ضمانت اصالت</span>
+                    </div>
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="ti ti-truck text-blue-600"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">ارسال سریع</span>
+                    </div>
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="ti ti-headset text-blue-600"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">پشتیبانی ۲۴/۷</span>
+                    </div>
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="ti ti-shield-check text-blue-600"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">گارانتی طلایی</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- آمار و ارقام -->
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 md:p-12 mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">ما در اعداد</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">۵۰,۰۰۰+</div>
+                    <div class="text-gray-600">مشتری راضی</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">۱۰۰+</div>
+                    <div class="text-gray-600">برند معتبر</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">۵۰۰۰+</div>
+                    <div class="text-gray-600">محصول فعال</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">۹۸%</div>
+                    <div class="text-gray-600">رضایت‌مندی</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- مأموریت و چشم‌انداز -->
+        <div class="grid md:grid-cols-2 gap-8 mb-20">
+            <!-- مأموریت -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-blue-100">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="ti ti-target-arrow text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-800">مأموریت ما</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    ارائه بهترین تجربه خرید موبایل با ترکیبی از محصولات باکیفیت، قیمت‌های منصفانه و خدمات پس از فروش بی‌نظیر. ما متعهدیم که با شفافیت کامل و صداقت، همراه مطمئن شما در سفر دیجیتال‌تان باشیم.
+                </p>
+            </div>
+            
+            <!-- چشم‌انداز -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-purple-100">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="ti ti-eye text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-800">چشم‌انداز ما</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    تبدیل شدن به پیشروترین پلتفرم فروش موبایل در خاورمیانه تا سال ۱۴۰۵. می‌خواهیم Mobix نه تنها یک فروشگاه، بلکه یک اکوسیستم کامل برای تمام نیازهای دیجیتال زندگی مدرن باشد.
+                </p>
+            </div>
+        </div>
+
+        <!-- ارزش‌های اصلی -->
+        <div class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">ارزش‌های اصلی ما</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-blue-500 hover:shadow-xl transition-shadow">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="ti ti-heart text-blue-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-gray-800">رضایت مشتری</h4>
+                    <p class="text-gray-600">مشتری‌های راضی قلب تپنده کسب‌وکار ما هستند. هر تصمیمی با اولویت رضایت شما گرفته می‌شود.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-purple-500 hover:shadow-xl transition-shadow">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="ti ti-shield-check text-purple-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-gray-800">اصالت کالا</h4>
+                    <p class="text-gray-600">هر محصولی که می‌فروشیم را با اطمینان از اصالت آن گارانتی می‌کنیم. کیفیت غیرقابل مذاکره است.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-green-500 hover:shadow-xl transition-shadow">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="ti ti-clock text-green-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-gray-800">تعهد به زمان</h4>
+                    <p class="text-gray-600">وقت شما ارزشمند است. ما متعهدیم که سفارشات را در کوتاه‌ترین زمان ممکن تحویل دهیم.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- تیم مدیریت -->
+        <div class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">تیم مدیریت</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-white shadow-xl">
+                        <img src="/static/images/sadegh.jpg" 
+                             alt="مدیر عامل" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold mb-2 text-gray-800">صادق لک</h4>
+                    <p class="text-blue-600 font-medium mb-2">مدیر عامل و بنیان‌گذار</p>
+                    <p class="text-gray-600 text-sm">۱۰+ سال تجربه در صنعت موبایل</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-white shadow-xl">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="مدیر فنی" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold mb-2 text-gray-800">سارا کریمی</h4>
+                    <p class="text-blue-600 font-medium mb-2">مدیر فنی و توسعه</p>
+                    <p class="text-gray-600 text-sm">متخصص اکوسیستم‌های دیجیتال</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-white shadow-xl">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="مدیر بازاریابی" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold mb-2 text-gray-800">رضا احمدی</h4>
+                    <p class="text-blue-600 font-medium mb-2">مدیر بازاریابی</p>
+                    <p class="text-gray-600 text-sm">استراتژیست برندسازی دیجیتال</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA نهایی -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 md:p-12 text-white text-center">
+            <h3 class="text-2xl md:text-3xl font-bold mb-4">آماده تجربه خرید متفاوت هستید؟</h3>
+            <p class="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
+                به خانواده بزرگ Mobix بپیوندید و از خدمات ویژه اعضا بهره‌مند شوید
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/products/" 
+                   class="bg-white text-blue-600 font-bold px-8 py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center">
+                    <i class="ti ti-shopping-cart ml-2"></i>
+                    مشاهده محصولات
+                </a>
+                <a href="/contact/" 
+                   class="bg-transparent border-2 border-white text-white font-bold px-8 py-3 rounded-xl hover:bg-white/10 transition flex items-center justify-center">
+                    <i class="ti ti-headset ml-2"></i>
+                    تماس با پشتیبانی
+                </a>
+            </div>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}حریم خصوصی | Mobix{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4">
+    <!-- هدر -->
+    <div class="text-center mb-12">
+        <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-700 flex items-center justify-center shadow-lg">
+            <i class="ti ti-shield-lock text-3xl text-white"></i>
+        </div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">حریم خصوصی</h1>
+        <p class="text-gray-600">ما به حریم خصوصی شما احترام می‌گذاریم</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+        
+        <!-- خلاصه -->
+        <div class="mb-10 p-6 bg-purple-50 border border-purple-200 rounded-xl">
+            <h3 class="text-xl font-bold text-purple-800 mb-3">📋 خلاصه سیاست حریم خصوصی</h3>
+            <p class="text-purple-700">
+                ما تنها اطلاعات لازم برای ارائه خدمات را جمع‌آوری می‌کنیم و آن را با هیچ شخص ثالثی به اشتراک نمی‌گذاریم.
+            </p>
+        </div>
+        
+        <div class="space-y-10">
+            
+            <!-- اطلاعات جمع‌آوری شده -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">۱</span>
+                    اطلاعاتی که جمع‌آوری می‌کنیم
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="font-bold text-gray-700 mb-3">💼 اطلاعات شخصی</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>• نام و نام خانوادگی</li>
+                            <li>• آدرس ایمیل</li>
+                            <li>• شماره تلفن (اختیاری)</li>
+                            <li>• آدرس پستی</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="font-bold text-gray-700 mb-3">🛒 اطلاعات خرید</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            <li>• تاریخچه سفارشات</li>
+                            <li>• آدرس حمل و نقل</li>
+                            <li>• روش پرداخت</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- استفاده از اطلاعات -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">۲</span>
+                    نحوه استفاده از اطلاعات
+                </h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>اطلاعات شما برای اهداف زیر استفاده می‌شود:</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="ti ti-check text-green-500 mt-1 ml-2"></i>
+                            <span>پردازش و ارسال سفارشات</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="ti ti-check text-green-500 mt-1 ml-2"></i>
+                            <span>ارسال اطلاع‌رسانی‌های مهم</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="ti ti-check text-green-500 mt-1 ml-2"></i>
+                            <span>بهبود خدمات و تجربه کاربری</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="ti ti-check text-green-500 mt-1 ml-2"></i>
+                            <span>پاسخ به درخواست‌های پشتیبانی</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- حفاظت از اطلاعات -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">۳</span>
+                    حفاظت از اطلاعات
+                </h2>
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="ti ti-shield-check text-2xl text-blue-600 ml-3"></i>
+                        <h3 class="text-xl font-bold text-blue-800">امنیت داده‌ها</h3>
+                    </div>
+                    <ul class="space-y-3 text-blue-700">
+                        <li>• استفاده از پروتکل SSL برای رمزنگاری داده‌ها</li>
+                        <li>• سرورهای امن با فایروال پیشرفته</li>
+                        <li>• دسترسی محدود به اطلاعات کاربران</li>
+                        <li>• پشتیبان‌گیری منظم از داده‌ها</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- کوکی‌ها -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">۴</span>
+                    کوکی‌ها (Cookies)
+                </h2>
+                <p class="text-gray-700 mb-4">
+                    ما از کوکی‌ها برای بهبود تجربه کاربری استفاده می‌کنیم. شما می‌توانید کوکی‌ها را از طریق تنظیمات مرورگر خود مدیریت کنید.
+                </p>
+                <div class="flex items-center text-gray-600">
+                    <i class="ti ti-info-circle ml-2"></i>
+                    <span class="text-sm">کوکی‌های ضروری برای عملکرد سایت غیرقابل غیرفعال‌سازی هستند.</span>
+                </div>
+            </div>
+            
+            <!-- حقوق کاربران -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">۵</span>
+                    حقوق شما
+                </h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>شما به عنوان کاربر Mobix حق دارید:</p>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <li class="flex items-center">
+                            <i class="ti ti-eye ml-2 text-blue-500"></i>
+                            <span>دسترسی به اطلاعات شخصی خود</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ti ti-edit ml-2 text-green-500"></i>
+                            <span>تصحیح اطلاعات نادرست</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ti ti-trash ml-2 text-red-500"></i>
+                            <span>درخواست حذف حساب کاربری</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="ti ti-ban ml-2 text-yellow-500"></i>
+                            <span>لغو اشتراک ایمیل‌های تبلیغاتی</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- ارتباط با ما -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">۶</span>
+                    سوالات و تماس
+                </h2>
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <p class="text-gray-700 mb-4">
+                        اگر سوالی درباره سیاست حریم خصوصی دارید، با ما تماس بگیرید:
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="{% url 'contact' %}" 
+                           class="flex-1 bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 transition">
+                            <i class="ti ti-headset ml-2"></i>
+                            فرم تماس
+                        </a>
+                        <a href="mailto:privacy@mobix.com" 
+                           class="flex-1 border border-blue-600 text-blue-600 text-center py-3 rounded-lg hover:bg-blue-50 transition">
+                            <i class="ti ti-mail ml-2"></i>
+                            privacy@mobix.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- تاریخ بروزرسانی -->
+        <div class="mt-12 pt-8 border-t border-gray-300 text-center">
+            <p class="text-gray-500">
+                <i class="ti ti-calendar ml-2"></i>
+                آخرین بروزرسانی: دی‌ماه ۱۴۰۴
+            </p>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,542 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}ویرایش مقاله | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'blog_detail' article.id %}" 
+                   class="text-gray-500 hover:text-gray-700 transition">
+                    <i class="ti ti-arrow-right text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">✏️ ویرایش مقاله</h1>
+                    <p class="text-gray-600 mt-1">به‌روزرسانی و ویرایش مقاله</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- راهنما -->
+        <div class="flex items-center gap-2 text-blue-600">
+            <i class="ti ti-info-circle"></i>
+            <span class="text-sm">تغییرات بلافاصله اعمال می‌شوند</span>
+        </div>
+    </div>
+    
+    <!-- نمایش پیام‌های سیستم -->
+    {% comment %} {% if messages %}
+    <div class="space-y-3">
+        {% for message in messages %}
+        <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200
+                                   {% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+            <div class="flex items-center">
+                <i class="ti {% if message.tags == 'success' %}ti-check{% else %}ti-alert-circle{% endif %} ml-2"></i>
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %} {% endcomment %}
+    
+    <!-- فرم اصلی در دو ستون -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ستون چپ: فرم مقاله -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">
+                    ویرایش محتوای مقاله
+                </h2>
+                
+                <!-- فرم ویرایش مقاله -->
+                <form method="POST" id="editArticleForm" class="space-y-6" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- بخش ۱: اطلاعات اصلی -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-news"></i>
+                            </div>
+                            اطلاعات اصلی مقاله
+                        </h3>
+                        
+                        <!-- عنوان -->
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2 font-medium">
+                                عنوان مقاله
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                name="title" 
+                                id="id_title"
+                                required
+                                class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                placeholder="یک عنوان جذاب و توصیفی بنویسید"
+                                value="{{ article.title }}"
+                                oninput="updatePreview()">
+                        </div>
+                        
+                        <!-- دسته‌بندی -->
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2 font-medium">
+                                دسته‌بندی
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select name="category" 
+                                        id="id_category"
+                                        required
+                                        class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition cursor-pointer"
+                                        onchange="updatePreview()">
+                                    <option value="" disabled>انتخاب دسته‌بندی</option>
+                                    <option value="tech" {% if article.category == 'tech' %}selected{% endif %}>تکنولوژی و کالای دیجیتال</option>
+                                    <option value="game" {% if article.category == 'game' %}selected{% endif %}>بازی و سرگرمی</option>
+                                    <option value="edu" {% if article.category == 'edu' %}selected{% endif %}>آموزش</option>
+                                </select>
+                                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                    <i class="ti ti-chevron-down text-gray-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- بخش ۲: محتوای مقاله -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-file-text"></i>
+                            </div>
+                            محتوای مقاله
+                            <span class="text-red-500 mr-2">*</span>
+                        </h3>
+                        
+                        
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2 font-medium">متن مقاله</label>
+                            <textarea name="content" 
+                                    id="id_content"
+                                    required
+                                    class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">{{ article.content }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- بخش ۳: تصویر مقاله -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-photo"></i>
+                            </div>
+                            تصویر شاخص مقاله
+                        </h3>
+                        
+                        <!-- تصویر فعلی -->
+                        {% if article.image %}
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2 font-medium">تصویر فعلی</label>
+                            <div class="w-full max-w-md mx-auto">
+                                <img src="{{ article.image.url }}" 
+                                     alt="{{ article.title }}"
+                                     class="w-full h-48 object-cover rounded-xl border border-gray-300">
+                                <div class="mt-2 text-sm text-gray-600">
+                                    برای تغییر تصویر، فایل جدید انتخاب کنید
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- آپلود تصویر جدید -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2 font-medium">
+                                {% if article.image %}تغییر تصویر{% else %}انتخاب تصویر{% endif %}
+                            </label>
+                            <div class="flex items-center justify-center w-full">
+                                <label for="id_image" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <i class="ti ti-upload text-4xl text-gray-400 mb-4"></i>
+                                        <p class="mb-2 text-sm text-gray-500">
+                                            <span class="font-semibold">برای آپلود کلیک کنید</span>
+                                        </p>
+                                        <p class="text-xs text-gray-500">PNG, JPG یا JPEG (حداکثر ۵MB)</p>
+                                    </div>
+                                    <input id="id_image" name="image" type="file" class="hidden" accept="image/*" onchange="handleImagePreview(event)">
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- پیش‌نمایش تصویر جدید -->
+                        <div id="imagePreview" class="hidden mt-4">
+                            <label class="block text-gray-700 mb-2 font-medium">پیش‌نمایش تصویر جدید</label>
+                            <div class="w-full max-w-md mx-auto">
+                                <img id="previewImage" class="w-full h-48 object-cover rounded-xl border border-gray-300">
+                                <button type="button" 
+                                        onclick="removeImage()"
+                                        class="mt-2 text-red-600 hover:text-red-800 text-sm">
+                                    <i class="ti ti-trash ml-1"></i>
+                                    حذف تصویر جدید
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- بخش ۴: تنظیمات انتشار -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-calendar"></i>
+                            </div>
+                            تنظیمات انتشار
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- تاریخ انتشار -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">تاریخ انتشار</label>
+                                <input type="datetime-local" 
+                                    name="publish_date"
+                                    id="id_publish_date"
+                                    class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                    dir="ltr"
+                                    value="{{ article.publish_date|date:'Y-m-d\TH:i' }}"
+                                    onchange="updatePreview()">
+                                <p class="text-gray-500 text-xs mt-2">تاریخ انتشار مقاله</p>
+                            </div>
+                            
+                            <!-- وضعیت مقاله -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">وضعیت مقاله</label>
+                                <div class="space-y-3">
+                                    <label class="flex items-center">
+                                        <input type="radio" 
+                                            name="status" 
+                                            id="status_draft"
+                                            value="draft"
+                                            class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                            {% if article.status == 'draft' %}checked{% endif %}
+                                            onchange="updatePreview()">
+                                        <span class="mr-2 text-gray-700">پیش‌نویس</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" 
+                                            name="status" 
+                                            id="status_published"
+                                            value="published"
+                                            class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                            {% if article.status == 'published' %}checked{% endif %}
+                                            onchange="updatePreview()">
+                                        <span class="mr-2 text-gray-700">منتشر شده</span>
+                                    </label>
+                                </div>
+                                <p class="text-gray-500 text-xs mt-2">تغییر وضعیت بلافاصله اعمال می‌شود</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- دکمه‌های اقدام -->
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-200">
+                        <!-- دکمه بازگشت -->
+                        <a href="{% url 'blog_detail' article.id %}" 
+                        class="order-2 sm:order-1 w-full sm:w-auto px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-center">
+                            <i class="ti ti-arrow-right ml-2"></i>
+                            بازگشت به جزئیات
+                        </a>
+                        
+                        <!-- دکمه‌های ذخیره -->
+                        <div class="order-1 sm:order-2 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <!-- ذخیره تغییرات -->
+                            <button type="submit" 
+                                    name="save_changes"
+                                    class="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition">
+                                <i class="ti ti-device-floppy ml-2"></i>
+                                ذخیره تغییرات
+                            </button>
+                            
+                            <!-- پیش‌نمایش -->
+                            <button type="button" 
+                                    onclick="previewArticle()"
+                                    class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition">
+                                <i class="ti ti-eye ml-2"></i>
+                                پیش‌نمایش
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- ستون راست: پیش‌نمایش -->
+        <div class="space-y-6">
+            <!-- کارت اطلاعات مقاله -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">اطلاعات مقاله</h3>
+                
+                <div class="space-y-4">
+                    <!-- آمار -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-blue-50 p-3 rounded-xl">
+                            <div class="text-blue-600 text-sm">بازدیدها</div>
+                            <div class="text-xl font-bold">{{ article.views }}</div>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-xl">
+                            <div class="text-green-600 text-sm">کلمات</div>
+                            <div class="text-xl font-bold">{{ article.content|wordcount }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- تاریخ‌ها -->
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">ایجاد شده:</span>
+                            <span class="font-medium">{{ article.created_at|date:"Y/m/d" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">آخرین ویرایش:</span>
+                            <span class="font-medium">{{ article.updated_at|timesince }} پیش</span>
+                        </div>
+                    </div>
+                    
+                    <!-- نویسنده -->
+                    <div class="pt-4 border-t border-gray-200">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center ml-3">
+                                <i class="ti ti-user"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">نویسنده</div>
+                                <div class="font-medium">{{ article.author.get_full_name|default:article.author.username }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- کارت پیش‌نمایش -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">پیش‌نمایش مقاله</h3>
+                
+                <div class="text-center p-4 border-2 border-dashed border-gray-300 rounded-xl">
+                    <!-- تصویر -->
+                    <div id="cardImagePreview" class="w-full h-40 rounded-xl mb-4 overflow-hidden">
+                        {% if article.image %}
+                        <img src="{{ article.image.url }}" 
+                             alt="{{ article.title }}"
+                             class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center">
+                            <i class="ti ti-news text-3xl text-blue-600"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- عنوان -->
+                    <div id="previewTitle" class="text-xl font-bold text-gray-800 mb-2 line-clamp-2">
+                        {{ article.title }}
+                    </div>
+                    
+                    <!-- دسته‌بندی -->
+                    <div class="mb-4">
+                        <span id="previewCategory" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            <i class="ti ti-tag text-xs ml-1"></i>
+                            {{ article.get_category_display_fa }}
+                        </span>
+                    </div>
+                    
+                    <!-- اطلاعات -->
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-gray-500">وضعیت</div>
+                            <div id="previewStatus" class="font-medium {% if article.status == 'published' %}text-green-600{% else %}text-amber-600{% endif %}">
+                                {% if article.status == 'published' %}منتشر شده{% else %}پیش‌نویس{% endif %}
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-gray-500">تاریخ</div>
+                            <div id="previewDate" class="font-medium">{{ article.publish_date|date:"Y/m/d" }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-xs text-gray-500">
+                        <i class="ti ti-clock ml-1"></i>
+                        آخرین ویرایش: همین حالا
+                    </div>
+                </div>
+            </div>
+            
+            <!-- کارت نکات -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">نکات ویرایش</h3>
+                
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-start">
+                        <i class="ti ti-check text-green-500 ml-2 mt-0.5"></i>
+                        <span class="text-gray-700">تغییرات بلافاصله اعمال می‌شوند.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-alert-circle text-amber-500 ml-2 mt-0.5"></i>
+                        <span class="text-gray-700">مقالات منتشر شده بلافاصله در سایت نمایش داده می‌شوند.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-history text-blue-500 ml-2 mt-0.5"></i>
+                        <span class="text-gray-700">تاریخ ویرایش به‌روزرسانی می‌شود.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- اسکریپت‌ها (مشابه blog_create) -->
+<script>
+// ==================== پیش‌نمایش تصویر ====================
+function handleImagePreview(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    const imgPreview = document.getElementById('previewImage');
+    const cardPreview = document.getElementById('cardImagePreview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imgPreview.src = e.target.result;
+            preview.classList.remove('hidden');
+            cardPreview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeImage() {
+    const imageInput = document.getElementById('id_image');
+    const preview = document.getElementById('imagePreview');
+    
+    if (imageInput) imageInput.value = '';
+    if (preview) preview.classList.add('hidden');
+}
+
+// ==================== به‌روزرسانی پیش‌نمایش ====================
+function updatePreview() {
+    // عنوان
+    const titleInput = document.getElementById('id_title');
+    const previewTitle = document.getElementById('previewTitle');
+    if (titleInput && previewTitle) {
+        previewTitle.textContent = titleInput.value || 'عنوان مقاله';
+    }
+    
+    // دسته‌بندی
+    const categorySelect = document.getElementById('id_category');
+    const previewCategory = document.getElementById('previewCategory');
+    if (categorySelect && previewCategory) {
+        const categoryNames = {
+            'tech': 'تکنولوژی و کالای دیجیتال',
+            'game': 'بازی و سرگرمی',
+            'edu': 'آموزش'
+        };
+        const categoryName = categoryNames[categorySelect.value] || 'دسته‌بندی';
+        previewCategory.innerHTML = `<i class="ti ti-tag text-xs ml-1"></i>${categoryName}`;
+    }
+    
+    // وضعیت
+    const statusPublished = document.getElementById('status_published');
+    const statusElement = document.getElementById('previewStatus');
+    if (statusElement) {
+        if (statusPublished && statusPublished.checked) {
+            statusElement.textContent = 'منتشر شده';
+            statusElement.className = 'font-medium text-green-600';
+        } else {
+            statusElement.textContent = 'پیش‌نویس';
+            statusElement.className = 'font-medium text-amber-600';
+        }
+    }
+    
+    // تاریخ
+    const dateInput = document.getElementById('id_publish_date');
+    const dateElement = document.getElementById('previewDate');
+    if (dateInput && dateElement) {
+        if (dateInput.value) {
+            const date = new Date(dateInput.value);
+            dateElement.textContent = date.toLocaleDateString('fa-IR');
+        }
+    }
+}
+
+// ==================== پیش‌نمایش کامل ====================
+function previewArticle() {
+    const title = document.getElementById('id_title')?.value;
+    const content = document.getElementById('id_content')?.value;
+    
+    if (!title || !content) {
+        alert('لطفاً عنوان و محتوای مقاله را وارد کنید.');
+        return;
+    }
+    
+    const modalHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-900">پیش‌نمایش مقاله</h3>
+                </div>
+                <div class="p-6 overflow-y-auto max-h-[70vh]">
+                    <h1 class="text-2xl font-bold mb-6">${title}</h1>
+                    <div class="prose max-w-none">${content}</div>
+                </div>
+                <div class="p-6 border-t border-gray-200">
+                    <button onclick="this.closest('.fixed').remove()" 
+                            class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700">
+                        بستن
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// ==================== بارگذاری اولیه ====================
+document.addEventListener('DOMContentLoaded', function() {
+    updatePreview();
+});
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.tox-tinymce {
+    border-radius: 0.75rem !important;
+    border: 1px solid #d1d5db !important;
+}
+
+/* استایل‌های سفارشی */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+</style>
+{% endblock %}

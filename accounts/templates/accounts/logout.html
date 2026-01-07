@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}خروج از حساب کاربری | Mobix{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+    <div class="max-w-md w-full">
+        
+        <!-- لوگو/آیکون -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-400 to-green-200 flex items-center justify-center shadow-lg">
+            <i class="ti ti-door-exit text-5xl text-rose-700"></i>
+        </div>
+            <h1 class="text-2xl font-bold text-gray-900">خروج از حساب کاربری</h1>
+            <p class="text-gray-600 mt-2">آیا مطمئن هستید که می‌خواهید خارج شوید؟</p>
+        </div>
+        
+        <!-- کارت اصلی -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            
+            <!-- وضعیت کاربر -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-md">
+                        <span class="text-white text-xl font-bold">
+                            {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                        </span>
+                    </div>
+                    <div class="mr-4 flex-1">
+                        <h3 class="font-bold text-gray-900 text-lg">
+                            {{ user.get_full_name|default:user.username }}
+                        </h3>
+                        <p class="text-gray-600 text-sm mt-1">{{ user.email }}</p>
+                        <div class="flex items-center mt-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="ti ti-circle-filled text-[8px] ml-1"></i>
+                                آنلاین
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- هشدار -->
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex items-start">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 ml-3">
+                        <i class="ti ti-alert-triangle text-amber-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-amber-800 mb-2">قبل از خروج توجه کنید</h4>
+                        <ul class="text-amber-700 text-sm space-y-2">
+                            <li class="flex items-start">
+                                <i class="ti ti-circle text-[6px] mt-1.5 ml-2"></i>
+                                <span>پس از خروج، به پنل کاربری دسترسی نخواهید داشت.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="ti ti-circle text-[6px] mt-1.5 ml-2"></i>
+                                <span>برای مشاهده سفارش‌ها نیاز به ورود مجدد دارید.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="ti ti-circle text-[6px] mt-1.5 ml-2"></i>
+                                <span>لیست علاقه‌مندی‌های شما حفظ می‌شود.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- اقدامات -->
+            <div class="p-6">
+                <form method="POST" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <!-- دکمه خروج - رنگ اصلی و جذاب -->
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3.5 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                        <i class="ti ti-login ml-2"></i>
+                        <span class="text-lg">خروج از حساب کاربری</span>
+                    </button>
+                    
+                    <!-- دکمه لغو - با استایل متمایز -->
+                    <a href="{% url 'home' %}" 
+                    class="inline-block w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3.5 px-8 rounded-xl transition-all text-center">
+                        <i class="ti ti-arrow-back text-xl group-hover:-translate-x-1 transition-transform duration-300"></i>
+                        <span class="text-lg">لغو و ادامه خرید</span>
+                    </a>
+                </form>
+                
+                <!-- لینک‌های کمکی -->
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <p class="text-gray-500 text-center text-sm mb-4">نیاز به کمک دارید؟</p>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <a href="{% url 'login' %}" 
+                           class="inline-flex items-center gap-1 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm">
+                            <i class="ti ti-login"></i>
+                            ورود با حساب دیگر
+                        </a>
+                        <a href="{% url 'register' %}" 
+                           class="inline-flex items-center gap-1 px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition text-sm">
+                            <i class="ti ti-user-plus"></i>
+                            حساب جدید
+                        </a>
+                        <a href="{% url 'contact' %}" 
+                           class="inline-flex items-center gap-1 px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition text-sm">
+                            <i class="ti ti-headset"></i>
+                            پشتیبانی
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- اطلاعات امنیتی -->
+        <div class="mt-8 text-center">
+            <div class="inline-flex items-center gap-2 text-gray-500 text-sm bg-gray-50 rounded-full px-4 py-2">
+                <i class="ti ti-shield-lock"></i>
+                <span>اطلاعات شما با روش‌های امنیتی پیشرفته محافظت می‌شود</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

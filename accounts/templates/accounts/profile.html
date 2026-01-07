@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}پروفایل کاربری | Mobix{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-8" id="profile-app">
+    <div class="max-w-7xl mx-auto px-4">
+        
+        <!-- هدر صفحه -->
+        <div class="mb-10">
+            <h1 class="text-3xl font-bold text-gray-900 mb-3">پنل کاربری Mobix</h1>
+            <p class="text-gray-600">به پنل مدیریت حساب کاربری خود خوش آمدید</p>
+        </div>
+        
+        <!-- پیام‌ها -->
+        {% if messages %}
+        <div class="mb-8">
+            {% for message in messages %}
+            <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200{% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+                <div class="flex items-center">
+                    <i class="ti ti-{% if message.tags == 'success' %}check{% else %}x{% endif %} ml-2"></i>
+                    {{ message }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- منوی کناری -->
+            <div class="lg:w-1/4">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
+                    <!-- اطلاعات کاربر -->
+                    <div class="flex items-center mb-6 pb-6 border-b border-gray-200">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-xl">
+                            {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                        </div>
+                        <div class="mr-3">
+                            <p class="font-bold text-gray-900">
+                                {{ user.get_full_name|default:user.username }}
+                            </p>
+                            <p class="text-sm text-gray-500">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- منو -->
+                    <nav class="space-y-2">
+                        <button onclick="showSection('dashboard')" 
+                                class="w-full text-right flex items-center px-4 py-3 rounded-xl bg-blue-50 text-blue-600 font-medium transition">
+                            <i class="ti ti-dashboard ml-2"></i>
+                            پیشخوان
+                        </button>
+                        <button onclick="showSection('edit-profile')" 
+                                class="w-full text-right flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition">
+                            <i class="ti ti-user-edit ml-2"></i>
+                            ویرایش اطلاعات
+                        </button>
+                        <button onclick="showSection('orders')" 
+                                class="w-full text-right flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition">
+                            <i class="ti ti-shopping-cart ml-2"></i>
+                            سفارشات من
+                        </button>
+                        <a href="{% url 'logout' %}" 
+                           class="w-full text-right flex items-center px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 font-medium transition">
+                            <i class="ti ti-logout ml-2"></i>
+                            خروج از حساب
+                        </a>
+                    </nav>
+                    
+                    <!-- وضعیت حساب -->
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <p class="text-sm text-gray-500 mb-2">وضعیت حساب</p>
+                        <div class="flex items-center">
+                            <span class="w-2 h-2 bg-green-500 rounded-full ml-2"></span>
+                            <span class="text-green-600 font-medium">فعال</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">عضو از {{ user.date_joined|date:"Y/m/d" }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- محتوای اصلی (تغییر می‌کند) -->
+            <div class="lg:w-3/4" id="content-area">
+                <!-- محتوای پیش‌فرض: پیشخوان -->
+                <div id="dashboard-section">
+                    <!-- بخش ۱: پیشخوان -->
+                    <section class="mb-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">پیشخوان</h2>
+                            <span class="text-sm text-gray-500">آخرین به‌روزرسانی: همین الان</span>
+                        </div>
+                        
+                        <!-- آمار -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">کل سفارشات</p>
+                                        <p class="text-3xl font-bold mt-2">{{ stats.total_orders }}</p>
+                                    </div>
+                                    <i class="ti ti-shopping-cart text-3xl opacity-80"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">در انتظار پردازش</p>
+                                        <p class="text-3xl font-bold mt-2">{{ stats.pending_orders }}</p>
+                                    </div>
+                                    <i class="ti ti-clock text-3xl opacity-80"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">تکمیل شده</p>
+                                        <p class="text-3xl font-bold mt-2">{{ stats.completed_orders }}</p>
+                                    </div>
+                                    <i class="ti ti-check text-3xl opacity-80"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- خوش‌آمدگویی -->
+                        <div class="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-bold text-gray-900 mb-3">سلام {{ user.first_name|default:"کاربر" }}! 👋</h3>
+                            <p class="text-gray-700">
+                                به پنل کاربری Mobix خوش آمدید. از اینجا می‌توانید اطلاعات حساب خود را مدیریت کنید، 
+                                سفارش‌های خود را پیگیری کرده و اطلاعات شخصی را به‌روزرسانی کنید.
+                            </p>
+                        </div>
+                    </section>
+                </div>
+                
+                <!-- بخش ۲: ویرایش اطلاعات (مخفی) -->
+                <div id="edit-profile-section" class="hidden">
+                    <section class="mb-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">ویرایش اطلاعات شخصی</h2>
+                            <span class="text-sm text-gray-500">تمام فیلدها اختیاری هستند</span>
+                        </div>
+                        
+                        <!-- فرم ویرایش -->
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                            <form method="POST" action="{% url 'profile' %}" class="space-y-6" id="profile-form">
+                                {% csrf_token %}
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- نام -->
+                                    <div>
+                                        <label class="block text-gray-700 mb-2 font-medium">نام</label>
+                                        {{ profile_form.first_name }}
+                                    </div>
+                                    
+                                    <!-- نام خانوادگی -->
+                                    <div>
+                                        <label class="block text-gray-700 mb-2 font-medium">نام خانوادگی</label>
+                                        {{ profile_form.last_name }}
+                                    </div>
+                                </div>
+                                
+                                <!-- ایمیل -->
+                                <div>
+                                    <label class="block text-gray-700 mb-2 font-medium">ایمیل</label>
+                                    {{ profile_form.email }}
+                                </div>
+                                
+                                {% if profile_extra_form %}
+                                    <!-- شماره تماس -->
+                                    <div>
+                                        <label class="block text-gray-700 mb-2 font-medium">شماره تماس</label>
+                                        {{ profile_extra_form.phone }}
+                                        <p class="text-gray-500 text-sm mt-2">برای پیگیری سفارش و اطلاع‌رسانی ضروری است</p>
+                                    </div>
+                                    
+                                    <!-- آدرس -->
+                                    <div>
+                                        <label class="block text-gray-700 mb-2 font-medium">آدرس</label>
+                                        {{ profile_extra_form.address }}
+                                    </div>
+                                {% else %}
+                                    <!-- اگر فرم اضافی نداریم -->
+                                    <div>
+                                        <label class="block text-gray-700 mb-2 font-medium">شماره تماس</label>
+                                        {{ profile_form.phone }}
+                                        <p class="text-gray-500 text-sm mt-2">برای پیگیری سفارش و اطلاع‌رسانی ضروری است</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-gray-700 mb-2 font-medium">آدرس</label>
+                                        {{ profile_form.address }}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- دکمه ذخیره -->
+                                <div class="pt-4">
+                                    <button type="submit" 
+                                            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3.5 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                                        <i class="ti ti-device-floppy ml-2"></i>
+                                        ذخیره تغییرات
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+                
+                <!-- بخش ۳: سفارشات (مخفی) -->
+                <div id="orders-section" class="hidden">
+                    <section class="mb-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">سفارشات من</h2>
+                            <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">
+                                <i class="ti ti-history ml-2"></i>
+                                مشاهده همه سفارشات
+                            </a>
+                        </div>
+                        
+                        <!-- پیام موقت -->
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
+                            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                <i class="ti ti-shopping-cart text-3xl text-gray-400"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-3">هنوز سفارشی ثبت نکرده‌اید</h3>
+                            <p class="text-gray-600 mb-6">پس از ثبت سفارش در Mobix، جزئیات آن در این بخش نمایش داده خواهد شد.</p>
+                            <a href="{% url 'home' %}" 
+                               class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all">
+                                <i class="ti ti-shopping-bag"></i>
+                                شروع خرید
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript برای تغییر بخش‌ها -->
+<script>
+// بخش‌های مختلف
+    const sections = {
+        'dashboard': document.getElementById('dashboard-section'),
+        'edit-profile': document.getElementById('edit-profile-section'),
+        'orders': document.getElementById('orders-section')
+    };
+
+    // دکمه‌های منو
+    const menuButtons = document.querySelectorAll('nav button');
+
+    // تابع نمایش بخش
+    function showSection(sectionId) {
+        // مخفی کردن همه بخش‌ها
+        Object.values(sections).forEach(section => {
+            if (section) {
+                section.classList.add('hidden');
+            }
+        });
+        
+        // نمایش بخش انتخاب شده
+        if (sections[sectionId]) {
+            sections[sectionId].classList.remove('hidden');
+        }
+        
+        // به‌روزرسانی وضعیت منو
+        menuButtons.forEach(button => {
+            button.classList.remove('bg-blue-50', 'text-blue-600');
+            button.classList.add('text-gray-700', 'hover:bg-gray-50');
+        });
+        
+        // هایلایت دکمه فعال
+        const activeButton = document.querySelector(`button[onclick="showSection('${sectionId}')"]`);
+        if (activeButton) {
+            activeButton.classList.remove('text-gray-700', 'hover:bg-gray-50');
+            activeButton.classList.add('bg-blue-50', 'text-blue-600');
+        }
+        
+        // به‌روزرسانی URL بدون رفرش
+        history.pushState({section: sectionId}, '', `#${sectionId}`);
+    }
+
+    // مدیریت دکمه برگشت/جلو مرورگر
+    window.addEventListener('popstate', function(event) {
+        if (event.state && event.state.section) {
+            showSection(event.state.section);
+        }
+    });
+
+    // بارگذاری اولیه
+    document.addEventListener('DOMContentLoaded', function() {
+        // بررسی هش در URL
+        const hash = window.location.hash.substring(1);
+        if (hash && sections[hash]) {
+            showSection(hash);
+        } else {
+            showSection('dashboard');
+        }
+    });
+
+    // مدیریت فرم (AJAX - اختیاری)
+    document.getElementById('profile-form')?.addEventListener('submit', function(e) {
+        // می‌توانید اینجا AJAX اضافه کنید تا فرم بدون رفرش ارسال شود
+        // فعلاً اجازه می‌دهیم به روش معمول ارسال شود
+    });
+</script>
+
+
+{% endblock %}

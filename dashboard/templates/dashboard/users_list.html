@@ -1,0 +1,530 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}مدیریت کاربران | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">👥 مدیریت کاربران</h1>
+            <p class="text-gray-600 mt-1">مدیریت کاربران و پروفایل‌ها</p>
+        </div>
+        
+        <!-- آمار و فیلترها -->
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- آمار کاربران -->
+            <div class="flex items-center bg-blue-50 px-4 py-2 rounded-xl">
+                <i class="ti ti-users text-blue-600 ml-2"></i>
+                <span class="text-blue-700">
+                    <span class="font-bold">{{ total_users }}</span> کاربر
+                </span>
+            </div>
+            
+            <!-- آمار مدیران -->
+            <div class="flex items-center bg-purple-50 px-4 py-2 rounded-xl">
+                <i class="ti ti-shield text-purple-600 ml-2"></i>
+                <span class="text-purple-700">
+                    <span class="font-bold">{{ staff_count }}</span> مدیر
+                </span>
+            </div>
+            
+            <!-- دکمه افزودن کاربر -->
+            <a href="{% url 'add_user' %}" 
+               class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all shadow hover:shadow-lg">
+                <i class="ti ti-user-plus"></i>
+                افزودن کاربر جدید
+            </a>
+        </div>
+    </div>
+    
+    <!-- کارت فیلتر و جستجو -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- جستجو -->
+            <div>
+                <label class="block text-gray-700 mb-2 font-medium">جستجوی کاربر</label>
+                <div class="relative">
+                    <input type="text" 
+                           placeholder="نام کاربری، ایمیل یا شماره تلفن..."
+                           class="w-full bg-gray-50 border border-gray-300 rounded-xl pr-12 pl-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                           id="searchInput"
+                           value="{{ search_query }}"
+                           onkeyup="filterTable()">
+                    <button class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        <i class="ti ti-search"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- فیلتر وضعیت -->
+            <div>
+                <label class="block text-gray-700 mb-2 font-medium">وضعیت حساب</label>
+                <select class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        id="statusFilter"
+                        onchange="filterTable()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>همه کاربران</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>فعال</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>غیرفعال</option>
+                </select>
+            </div>
+            
+            <!-- فیلتر نقش -->
+            <div>
+                <label class="block text-gray-700 mb-2 font-medium">نقش کاربر</label>
+                <select class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        id="roleFilter"
+                        onchange="filterTable()">
+                    <option value="all" {% if role_filter == 'all' %}selected{% endif %}>همه نقش‌ها</option>
+                    <option value="staff" {% if role_filter == 'staff' %}selected{% endif %}>مدیران</option>
+                    <option value="user" {% if role_filter == 'user' %}selected{% endif %}>کاربران عادی</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- کارت اصلی لیست کاربران -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <!-- هدر جدول -->
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-900">لیست کاربران</h2>
+                
+                <!-- صادرات و عملیات گروهی -->
+                <div class="flex items-center gap-3">
+                    <!-- عملیات گروهی -->
+                    <select class="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            id="bulkActions"
+                            onchange="handleBulkAction()">
+                        <option value="">عملیات گروهی</option>
+                        <option value="activate">فعال کردن</option>
+                        <option value="deactivate">غیرفعال کردن</option>
+                        <option value="make_staff">تبدیل به مدیر</option>
+                        <option value="remove_staff">حذف از مدیران</option>
+                    </select>
+                    
+                    <!-- تعداد نمایش -->
+                    <select class="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            onchange="changePerPage(this.value)">
+                        <option value="10" {% if per_page == 10 %}selected{% endif %}>۱۰ مورد</option>
+                        <option value="25" {% if per_page == 25 %}selected{% endif %}>۲۵ مورد</option>
+                        <option value="50" {% if per_page == 50 %}selected{% endif %}>۵۰ مورد</option>
+                        <option value="100" {% if per_page == 100 %}selected{% endif %}>۱۰۰ مورد</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- جدول کاربران -->
+        <div class="overflow-x-auto">
+            {% if users_list %}
+            <table class="w-full admin-table" id="usersTable">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">
+                            <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" class="w-5 h-5 text-blue-600 rounded border-gray-300">
+                        </th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">کاربر</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">اطلاعات تماس</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">عضویت</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">وضعیت</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for user in users_list %}
+                    <tr class="hover:bg-gray-50 transition" id="user-{{ user.id }}">
+                        <!-- چک‌باکس -->
+                        <td class="py-4 px-6">
+                            <input type="checkbox" 
+                                   name="selected_users" 
+                                   value="{{ user.id }}"
+                                   class="user-checkbox w-5 h-5 text-blue-600 rounded border-gray-300">
+                        </td>
+                        
+                        <!-- اطلاعات کاربر -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-xl 
+                                    {% if user.is_staff %}bg-gradient-to-r from-purple-100 to-pink-100
+                                    {% else %}bg-gradient-to-r from-blue-100 to-cyan-100{% endif %} 
+                                    flex items-center justify-center ml-3">
+                                    <span class="{% if user.is_staff %}text-purple-600{% else %}text-blue-600{% endif %} font-bold text-lg">
+                                        {{ user.username|first|upper }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-gray-900">
+                                            {{ user.get_full_name|default:user.username }}
+                                        </h3>
+                                        {% if user.is_superuser %}
+                                        <span class="px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded-full font-bold">
+                                            سوپرادمین
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-gray-500 text-sm">@{{ user.username }}</p>
+                                    {% if user.is_staff %}
+                                    <p class="text-purple-600 text-xs font-medium mt-1">مدیر سیستم</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- اطلاعات تماس -->
+                        <td class="py-4 px-6">
+                            <div class="space-y-2">
+                                <div class="flex items-center text-gray-700">
+                                    <i class="ti ti-mail text-gray-500 ml-2"></i>
+                                    <a href="mailto:{{ user.email }}" class="hover:text-blue-600">{{ user.email }}</a>
+                                </div>
+                                {% if user.profile.phone %}
+                                <div class="flex items-center text-gray-700">
+                                    <i class="ti ti-phone text-gray-500 ml-2"></i>
+                                    <a href="tel:{{ user.profile.phone }}" class="hover:text-green-600">{{ user.profile.phone }}</a>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- درصد تکمیل پروفایل -->
+                                <div class="mt-3">
+                                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                        <span>تکمیل پروفایل</span>
+                                        <span>{{ user.profile.profile_completion_percentage }}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" 
+                                             style="width: {{ user.profile.profile_completion_percentage }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- تاریخ عضویت -->
+                        <td class="py-4 px-6">
+                            <div class="text-right">
+                                <p class="text-gray-700">{{ user.date_joined|date:"Y/m/d" }}</p>
+                                <p class="text-gray-500 text-sm">{{ user.date_joined|time }}</p>
+                                <p class="text-gray-500 text-xs mt-2">
+                                    {{ user.date_joined|timesince }} پیش
+                                </p>
+                            </div>
+                        </td>
+                        
+                        <!-- وضعیت -->
+                        <td class="py-4 px-6">
+                            <div class="space-y-2">
+                                <!-- وضعیت فعال/غیرفعال -->
+                                <form method="post" action="{% url 'toggle_user_active' user.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('آیا از تغییر وضعیت کاربر مطمئنید؟')"
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                                {% if user.is_active %}bg-green-100 text-green-800 hover:bg-green-200
+                                                {% else %}bg-red-100 text-red-800 hover:bg-red-200{% endif %} 
+                                                transition">
+                                        <i class="ti 
+                                            {% if user.is_active %}ti-user-check
+                                            {% else %}ti-user-off{% endif %} 
+                                            text-xs ml-1"></i>
+                                        {% if user.is_active %}فعال{% else %}غیرفعال{% endif %}
+                                    </button>
+                                </form>
+                                
+                                <!-- وضعیت مدیر -->
+                                <form method="post" action="{% url 'toggle_user_staff' user.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('آیا از تغییر نقش کاربر مطمئنید؟')"
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                                {% if user.is_staff %}bg-purple-100 text-purple-800 hover:bg-purple-200
+                                                {% else %}bg-gray-100 text-gray-800 hover:bg-gray-200{% endif %} 
+                                                transition mt-1">
+                                        <i class="ti 
+                                            {% if user.is_staff %}ti-shield
+                                            {% else %}ti-user{% endif %} 
+                                            text-xs ml-1"></i>
+                                        {% if user.is_staff %}مدیر{% else %}کاربر عادی{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        
+                        <!-- عملیات -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-2 space-x-reverse">
+                                <!-- مشاهده جزئیات -->
+                                <a href="{% url 'user_detail' user.id %}" 
+                                   class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                
+                                <!-- ویرایش -->
+                                <a href="{% url 'edit_user' user.id %}" 
+                                   class="text-green-600 hover:text-green-800 p-2 rounded-lg hover:bg-green-50 transition">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                
+                                <!-- حذف -->
+                                <form method="post" action="{% url 'delete_user' user.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('آیا از حذف این کاربر مطمئنید؟ این عمل غیرقابل بازگشت است!')"
+                                            class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <!-- حالت خالی -->
+            <div class="text-center py-16">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="ti ti-users-off text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">هیچ کاربری یافت نشد</h3>
+                <p class="text-gray-500 max-w-md mx-auto mb-6">
+                    {% if search_query %}
+                    نتیجه‌ای برای "{{ search_query }}" یافت نشد.
+                    {% else %}
+                    هنوز هیچ کاربری در سیستم ثبت نشده است.
+                    {% endif %}
+                </p>
+                <a href="{% url 'add_user' %}" 
+                   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-xl transition-all">
+                    <i class="ti ti-user-plus"></i>
+                    افزودن اولین کاربر
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- صفحه‌بندی -->
+        {% if users_list.has_other_pages %}
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- اطلاعات صفحه -->
+                <p class="text-gray-600 text-sm">
+                    نمایش {{ users_list.start_index }} تا {{ users_list.end_index }} از {{ total_users }} کاربر
+                </p>
+                
+                <!-- ناوبری صفحات -->
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    {% if users_list.has_previous %}
+                    <a href="?page={{ users_list.previous_page_number }}&per_page={{ per_page }}&search={{ search_query }}&status={{ status_filter }}&role={{ role_filter }}" 
+                       class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="ti ti-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% for num in users_list.paginator.page_range %}
+                        {% if users_list.number == num %}
+                        <span class="px-3 py-2 bg-blue-600 text-white rounded-lg">{{ num }}</span>
+                        {% elif num > users_list.number|add:'-3' and num < users_list.number|add:'3' %}
+                        <a href="?page={{ num }}&per_page={{ per_page }}&search={{ search_query }}&status={{ status_filter }}&role={{ role_filter }}" 
+                           class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if users_list.has_next %}
+                    <a href="?page={{ users_list.next_page_number }}&per_page={{ per_page }}&search={{ search_query }}&status={{ status_filter }}&role={{ role_filter }}" 
+                       class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="ti ti-chevron-left"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- مودال تأیید عملیات گروهی -->
+<div id="bulkActionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-900" id="modalTitle">تأیید عملیات گروهی</h3>
+        </div>
+        <div class="p-6">
+            <p id="modalMessage" class="text-gray-700 mb-6">
+                آیا از انجام این عملیات بر روی کاربران انتخاب شده مطمئن هستید؟
+            </p>
+            <div class="flex justify-end space-x-3 space-x-reverse">
+                <button onclick="closeBulkModal()" 
+                        class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">
+                    انصراف
+                </button>
+                <button onclick="confirmBulkAction()" 
+                        class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">
+                    تأیید و اجرا
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* استایل‌های سفارشی */
+.user-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* انیمیشن برای ردیف‌ها */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+tr {
+    animation: slideIn 0.3s ease-out;
+}
+</style>
+
+<script>
+// ==================== مدیریت انتخاب گروهی ====================
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+}
+
+// ==================== فیلتر جدول ====================
+function filterTable() {
+    const search = document.getElementById('searchInput').value;
+    const status = document.getElementById('statusFilter').value;
+    const role = document.getElementById('roleFilter').value;
+    
+    // ساخت URL جدید با پارامترهای فیلتر
+    let url = `?per_page={{ per_page }}`;
+    
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status !== 'all') url += `&status=${status}`;
+    if (role !== 'all') url += `&role=${role}`;
+    
+    window.location.href = url;
+}
+
+// ==================== تغییر تعداد نمایش در صفحه ====================
+function changePerPage(value) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('per_page', value);
+    currentUrl.searchParams.set('page', '1'); // برگشت به صفحه اول
+    window.location.href = currentUrl.toString();
+}
+
+// ==================== مدیریت عملیات گروهی ====================
+let currentBulkAction = '';
+
+function handleBulkAction() {
+    const select = document.getElementById('bulkActions');
+    const action = select.value;
+    
+    if (!action) return;
+    
+    // بررسی انتخاب کاربران
+    const selectedUsers = document.querySelectorAll('.user-checkbox:checked');
+    if (selectedUsers.length === 0) {
+        alert('لطفاً حداقل یک کاربر را انتخاب کنید.');
+        select.value = '';
+        return;
+    }
+    
+    currentBulkAction = action;
+    
+    // تنظیم متن مودال
+    const actionTitles = {
+        'activate': 'فعال کردن کاربران',
+        'deactivate': 'غیرفعال کردن کاربران',
+        'make_staff': 'تبدیل به مدیر',
+        'remove_staff': 'حذف از مدیران'
+    };
+    
+    document.getElementById('modalTitle').textContent = actionTitles[action];
+    document.getElementById('modalMessage').textContent = 
+        `آیا از ${actionTitles[action]} برای ${selectedUsers.length} کاربر انتخاب شده مطمئن هستید؟`;
+    
+    // نمایش مودال
+    document.getElementById('bulkActionModal').classList.remove('hidden');
+    document.getElementById('bulkActionModal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBulkModal() {
+    document.getElementById('bulkActionModal').classList.add('hidden');
+    document.getElementById('bulkActionModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+    document.getElementById('bulkActions').value = '';
+    currentBulkAction = '';
+}
+
+function confirmBulkAction() {
+    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedUsers.length === 0) {
+        alert('هیچ کاربری انتخاب نشده است.');
+        closeBulkModal();
+        return;
+    }
+    
+    // ارسال درخواست به سرور
+    fetch('{% url "bulk_users_action" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            action: currentBulkAction,
+            users: selectedUsers
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('خطا: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('خطا در ارتباط با سرور');
+        console.error(error);
+    });
+    
+    closeBulkModal();
+}
+
+// ==================== بستن مودال با ESC ====================
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeBulkModal();
+    }
+});
+
+// ==================== بستن مودال با کلیک خارج ====================
+document.getElementById('bulkActionModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeBulkModal();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,732 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}افزودن کاربر جدید | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'users_list' %}" 
+                   class="text-gray-500 hover:text-gray-700 transition">
+                    <i class="ti ti-arrow-right text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">➕ افزودن کاربر جدید</h1>
+                    <p class="text-gray-600 mt-1">ایجاد حساب کاربری جدید به صورت دستی</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- راهنما -->
+        <div class="flex items-center gap-2 text-blue-600">
+            <i class="ti ti-info-circle"></i>
+            <span class="text-sm">اطلاعات وارد شده بلافاصله در سیستم ثبت می‌شود</span>
+        </div>
+    </div>
+    
+    <!-- فرم اصلی در دو ستون -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ستون چپ: اطلاعات کاربری -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">
+                    اطلاعات اصلی کاربر
+                </h2>
+                
+                <!-- نمایش پیام‌های خطا -->
+                {% if messages %}
+                <div class="mb-6 space-y-3">
+                    {% for message in messages %}
+                    <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} border">
+                        <div class="flex items-center">
+                            <i class="ti {% if message.tags == 'success' %}ti-check{% else %}ti-alert-circle{% endif %} ml-2"></i>
+                            {{ message }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- فرم افزودن کاربر -->
+                <form method="POST" id="addUserForm" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- بخش ۱: اطلاعات ورود -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-key"></i>
+                            </div>
+                            اطلاعات ورود
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- نام کاربری -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">
+                                    نام کاربری
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="username" 
+                                       required
+                                       class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                       placeholder="username"
+                                       value="{{ form.username.value|default:'' }}">
+                                {% if form.username.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.username.errors }}
+                                </div>
+                                {% endif %}
+                                <p class="text-gray-500 text-xs mt-2">برای ورود به سیستم استفاده می‌شود</p>
+                            </div>
+                            
+                            <!-- ایمیل -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">
+                                    ایمیل
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <input type="email" 
+                                       name="email" 
+                                       required
+                                       class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                       placeholder="user@example.com"
+                                       dir="ltr"
+                                       value="{{ form.email.value|default:'' }}">
+                                {% if form.email.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.email.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- رمز عبور -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">
+                                    رمز عبور
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="password" 
+                                           name="password1" 
+                                           id="password1"
+                                           required
+                                           class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                           placeholder="حداقل ۸ کاراکتر">
+                                    <button type="button" 
+                                            onclick="togglePassword('password1', 'toggleIcon1')"
+                                            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                                        <i class="ti ti-eye text-xl" id="toggleIcon1"></i>
+                                    </button>
+                                </div>
+                                {% if form.password1.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.password1.errors }}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- قوانین رمز عبور -->
+                                <div class="mt-3 space-y-1">
+                                    <p class="text-gray-600 text-sm">رمز عبور باید شامل:</p>
+                                    <ul class="text-gray-500 text-xs space-y-1 pr-4">
+                                        <li id="lengthRule" class="flex items-center"><i class="ti ti-circle ml-2"></i> حداقل ۸ کاراکتر</li>
+                                        <li id="numberRule" class="flex items-center"><i class="ti ti-circle ml-2"></i> حداقل یک عدد</li>
+                                        <li id="letterRule" class="flex items-center"><i class="ti ti-circle ml-2"></i> حداقل یک حرف</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- تأیید رمز عبور -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">
+                                    تأیید رمز عبور
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="password" 
+                                           name="password2" 
+                                           id="password2"
+                                           required
+                                           class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                           placeholder="تکرار رمز عبور">
+                                    <button type="button" 
+                                            onclick="togglePassword('password2', 'toggleIcon2')"
+                                            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                                        <i class="ti ti-eye text-xl" id="toggleIcon2"></i>
+                                    </button>
+                                </div>
+                                {% if form.password2.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.password2.errors }}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- تطابق رمز عبور -->
+                                <div id="passwordMatch" class="mt-2 text-sm hidden">
+                                    <i class="ti ti-check text-green-500 ml-1"></i>
+                                    <span class="text-green-600">رمز عبورها مطابقت دارند</span>
+                                </div>
+                                <div id="passwordMismatch" class="mt-2 text-sm hidden">
+                                    <i class="ti ti-x text-red-500 ml-1"></i>
+                                    <span class="text-red-600">رمز عبورها مطابقت ندارند</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- بخش ۲: اطلاعات شخصی -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-user"></i>
+                            </div>
+                            اطلاعات شخصی
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- نام -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">نام</label>
+                                <input type="text" 
+                                       name="first_name" 
+                                       class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                       placeholder="نام"
+                                       value="{{ form.first_name.value|default:'' }}">
+                                {% if form.first_name.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.first_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- نام خانوادگی -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">نام خانوادگی</label>
+                                <input type="text" 
+                                       name="last_name" 
+                                       class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                       placeholder="نام خانوادگی"
+                                       value="{{ form.last_name.value|default:'' }}">
+                                {% if form.last_name.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.last_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- بخش ۳: اطلاعات پروفایل -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-id"></i>
+                            </div>
+                            اطلاعات پروفایل (اختیاری)
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- شماره تلفن -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">تلفن همراه</label>
+                                <input type="tel" 
+                                       name="phone" 
+                                       class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                       placeholder="09123456789"
+                                       dir="ltr"
+                                       value="{{ form.phone.value|default:'' }}">
+                                {% if form.phone.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.phone.errors }}
+                                </div>
+                                {% endif %}
+                                <p class="text-gray-500 text-xs mt-2">برای پیگیری سفارشات ضروری است</p>
+                            </div>
+                            
+                            <!-- آدرس -->
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-700 mb-2 font-medium">آدرس</label>
+                                <textarea name="address" 
+                                          rows="3"
+                                          class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                          placeholder="آدرس کامل پستی">{{ form.address.value|default:'' }}</textarea>
+                                {% if form.address.errors %}
+                                <div class="text-red-600 text-sm mt-2">
+                                    {{ form.address.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- بخش ۴: تنظیمات دسترسی -->
+                    <div class="border border-gray-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center ml-3">
+                                <i class="ti ti-shield"></i>
+                            </div>
+                            تنظیمات دسترسی
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- وضعیت حساب -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">وضعیت حساب</label>
+                                <div class="flex items-center space-x-4 space-x-reverse">
+                                    <label class="flex items-center">
+                                        <input type="radio" 
+                                               name="is_active" 
+                                               value="true"
+                                               checked
+                                               class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                        <span class="mr-2 text-gray-700">فعال</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" 
+                                               name="is_active" 
+                                               value="false"
+                                               class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                        <span class="mr-2 text-gray-700">غیرفعال</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- نقش مدیر -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">نقش کاربر</label>
+                                <div class="flex items-center space-x-4 space-x-reverse">
+                                    <label class="flex items-center">
+                                        <input type="radio" 
+                                               name="is_staff" 
+                                               value="false"
+                                               checked
+                                               class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                        <span class="mr-2 text-gray-700">کاربر عادی</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" 
+                                               name="is_staff" 
+                                               value="true"
+                                               class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                        <span class="mr-2 text-gray-700">مدیر سیستم</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- سوپرادمین -->
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">سطح دسترسی</label>
+                                <div class="flex items-center">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" 
+                                               name="is_superuser" 
+                                               value="true"
+                                               class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                        <span class="mr-2 text-gray-700">سوپرادمین</span>
+                                    </label>
+                                </div>
+                                <p class="text-gray-500 text-xs mt-2">دسترسی کامل به همه بخش‌ها</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- دکمه‌های اقدام -->
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-200">
+                        <!-- دکمه بازگشت -->
+                        <a href="{% url 'users_list' %}" 
+                           class="order-2 sm:order-1 w-full sm:w-auto px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition text-center">
+                            <i class="ti ti-arrow-right ml-2"></i>
+                            بازگشت به لیست کاربران
+                        </a>
+                        
+                        <!-- دکمه‌های ذخیره -->
+                        <div class="order-1 sm:order-2 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <!-- ذخیره و ایجاد کاربر دیگر -->
+                            <button type="submit" 
+                                    name="save_and_add"
+                                    class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition">
+                                <i class="ti ti-check ml-2"></i>
+                                ذخیره و ایجاد کاربر دیگر
+                            </button>
+                            
+                            <!-- ذخیره و مشاهده -->
+                            <button type="submit" 
+                                    name="save_and_view"
+                                    class="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition">
+                                <i class="ti ti-eye ml-2"></i>
+                                ذخیره و مشاهده کاربر
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- ستون راست: راهنما و پیش‌نمایش -->
+        <div class="space-y-6">
+            <!-- کارت راهنما -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">راهنمای افزودن کاربر</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <i class="ti ti-info-circle text-blue-500 ml-2 mt-1"></i>
+                        <span class="text-gray-700">فیلدهای ستاره‌دار обязаاری هستند.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-user text-green-500 ml-2 mt-1"></i>
+                        <span class="text-gray-700">نام کاربری باید یکتا باشد و قابلیت تغییر ندارد.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-key text-amber-500 ml-2 mt-1"></i>
+                        <span class="text-gray-700">رمز عبور حداقل باید ۸ کاراکتر داشته باشد.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="ti ti-shield text-purple-500 ml-2 mt-1"></i>
+                        <span class="text-gray-700">کاربران "مدیر سیستم" به داشبورد دسترسی دارند.</span>
+                    </li>
+                </ul>
+                
+                <!-- نکات مهم -->
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <h4 class="font-bold text-blue-800 mb-2">نکات مهم:</h4>
+                    <ul class="text-blue-700 text-sm space-y-2">
+                        <li>• کاربر بلافاصله پس از ایجاد قابل استفاده است.</li>
+                        <li>• ایمیل تأیید ارسال نمی‌شود (افزودن دستی).</li>
+                        <li>• می‌توانید بعداً اطلاعات پروفایل را تکمیل کنید.</li>
+                        <li>• کاربران غیرفعال نمی‌توانند وارد سیستم شوند.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- کارت پیش‌نمایش -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">پیش‌نمایش پروفایل</h3>
+                
+                <div class="text-center p-4 border-2 border-dashed border-gray-300 rounded-xl">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                        <i class="ti ti-user text-3xl text-white"></i>
+                    </div>
+                    
+                    <div id="previewFullName" class="text-xl font-bold text-gray-800 mb-2">
+                        [نام کامل کاربر]
+                    </div>
+                    <div id="previewUsername" class="text-gray-600 mb-4">
+                        @[نام کاربری]
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-gray-500">ایمیل</div>
+                            <div id="previewEmail" class="font-medium truncate">[ایمیل]</div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-gray-500">وضعیت</div>
+                            <div id="previewStatus" class="font-medium text-green-600">فعال</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-xs text-gray-500">
+                        <i class="ti ti-clock ml-1"></i>
+                        ایجاد: همین حالا
+                    </div>
+                </div>
+                
+                <!-- دکمه تولید رمز -->
+                <button type="button" 
+                        onclick="generatePassword()"
+                        class="w-full mt-4 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">
+                    <i class="ti ti-wand ml-2"></i>
+                    تولید رمز عبور قوی
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال تأیید ایجاد کاربر -->
+<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-900">آماده ایجاد کاربر هستید؟</h3>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-700 mb-4">
+                کاربر با مشخصات زیر ایجاد خواهد شد:
+            </p>
+            <div class="bg-gray-50 p-4 rounded-xl mb-6">
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-600">نام کاربری:</span>
+                    <span id="confirmUsername" class="font-bold"></span>
+                </div>
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-600">ایمیل:</span>
+                    <span id="confirmEmail" class="font-bold"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">نقش:</span>
+                    <span id="confirmRole" class="font-bold"></span>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 space-x-reverse">
+                <button onclick="closeConfirmModal()" 
+                        class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">
+                    بازگشت و ویرایش
+                </button>
+                <button onclick="submitForm()" 
+                        class="px-6 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition">
+                    تأیید و ایجاد کاربر
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* استایل‌های سفارشی */
+input:focus, textarea:focus {
+    outline: none;
+    ring: 2px;
+}
+
+/* انیمیشن‌ها */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.5s ease-out;
+}
+</style>
+
+<script>
+// ==================== نمایش/مخفی کردن رمز عبور ====================
+function togglePassword(fieldId, iconId) {
+    const passwordInput = document.getElementById(fieldId);
+    const toggleIcon = document.getElementById(iconId);
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('ti-eye');
+        toggleIcon.classList.add('ti-eye-off');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('ti-eye-off');
+        toggleIcon.classList.add('ti-eye');
+    }
+}
+
+// ==================== تولید رمز عبور قوی ====================
+function generatePassword() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    
+    // حداقل یک حرف بزرگ، یک حرف کوچک، یک عدد، یک کاراکتر خاص
+    password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)];
+    password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)];
+    password += '0123456789'[Math.floor(Math.random() * 10)];
+    password += '!@#$%^&*'[Math.floor(Math.random() * 8)];
+    
+    // بقیه کاراکترها
+    for (let i = 0; i < 8; i++) {
+        password += chars[Math.floor(Math.random() * chars.length)];
+    }
+    
+    // تصادفی کردن ترتیب
+    password = password.split('').sort(() => 0.5 - Math.random()).join('');
+    
+    // نمایش در فیلدها
+    document.getElementById('password1').value = password;
+    document.getElementById('password2').value = password;
+    
+    // به روزرسانی پیش‌نمایش
+    validatePasswords();
+    
+    // نمایش پیام موفقیت
+    alert('✅ رمز عبور قوی تولید شد: ' + password + '\n\nآن را کپی کرده و در جای امن نگهداری کنید.');
+}
+
+// ==================== اعتبارسنجی رمز عبور ====================
+function validatePassword() {
+    const password = document.getElementById('password1').value;
+    const lengthValid = password.length >= 8;
+    const numberValid = /\d/.test(password);
+    const letterValid = /[a-zA-Z]/.test(password);
+    
+    // به‌روزرسانی آیکون‌ها
+    document.getElementById('lengthRule').innerHTML = 
+        `<i class="ti ${lengthValid ? 'ti-check text-green-500' : 'ti-circle'} ml-2"></i> حداقل ۸ کاراکتر`;
+    
+    document.getElementById('numberRule').innerHTML = 
+        `<i class="ti ${numberValid ? 'ti-check text-green-500' : 'ti-circle'} ml-2"></i> حداقل یک عدد`;
+    
+    document.getElementById('letterRule').innerHTML = 
+        `<i class="ti ${letterValid ? 'ti-check text-green-500' : 'ti-circle'} ml-2"></i> حداقل یک حرف`;
+    
+    return lengthValid && numberValid && letterValid;
+}
+
+// ==================== بررسی تطابق رمز عبورها ====================
+function validatePasswords() {
+    const password1 = document.getElementById('password1').value;
+    const password2 = document.getElementById('password2').value;
+    const matchDiv = document.getElementById('passwordMatch');
+    const mismatchDiv = document.getElementById('passwordMismatch');
+    
+    if (password2 === '') {
+        matchDiv.classList.add('hidden');
+        mismatchDiv.classList.add('hidden');
+        return false;
+    }
+    
+    if (password1 === password2) {
+        matchDiv.classList.remove('hidden');
+        mismatchDiv.classList.add('hidden');
+        return true;
+    } else {
+        matchDiv.classList.add('hidden');
+        mismatchDiv.classList.remove('hidden');
+        return false;
+    }
+}
+
+// ==================== به‌روزرسانی پیش‌نمایش ====================
+function updatePreview() {
+    // اطلاعات فرم
+    const username = document.querySelector('input[name="username"]').value;
+    const email = document.querySelector('input[name="email"]').value;
+    const firstName = document.querySelector('input[name="first_name"]').value;
+    const lastName = document.querySelector('input[name="last_name"]').value;
+    const isActive = document.querySelector('input[name="is_active"]:checked').value === 'true';
+    const isStaff = document.querySelector('input[name="is_staff"]:checked').value === 'true';
+    
+    // به‌روزرسانی پیش‌نمایش
+    document.getElementById('previewUsername').textContent = '@' + (username || 'نام کاربری');
+    document.getElementById('previewEmail').textContent = email || 'ایمیل';
+    document.getElementById('previewStatus').textContent = isActive ? 'فعال' : 'غیرفعال';
+    document.getElementById('previewStatus').className = isActive ? 'font-medium text-green-600' : 'font-medium text-red-600';
+    
+    // نام کامل
+    if (firstName || lastName) {
+        document.getElementById('previewFullName').textContent = 
+            (firstName || '') + ' ' + (lastName || '');
+    } else {
+        document.getElementById('previewFullName').textContent = 
+            username ? username.charAt(0).toUpperCase() + username.slice(1) : 'نام کامل کاربر';
+    }
+}
+
+// ==================== مدیریت فرم ====================
+function validateForm() {
+    // اعتبارسنجی پایه
+    const username = document.querySelector('input[name="username"]').value.trim();
+    const email = document.querySelector('input[name="email"]').value.trim();
+    const password1 = document.getElementById('password1').value;
+    const password2 = document.getElementById('password2').value;
+    
+    if (!username) {
+        alert('لطفاً نام کاربری را وارد کنید.');
+        return false;
+    }
+    
+    if (!email) {
+        alert('لطفاً ایمیل را وارد کنید.');
+        return false;
+    }
+    
+    if (!validatePassword()) {
+        alert('لطفاً یک رمز عبور قوی وارد کنید.');
+        return false;
+    }
+    
+    if (!validatePasswords()) {
+        alert('رمز عبورها مطابقت ندارند.');
+        return false;
+    }
+    
+    // نمایش مودال تأیید
+    document.getElementById('confirmUsername').textContent = username;
+    document.getElementById('confirmEmail').textContent = email;
+    
+    const isStaff = document.querySelector('input[name="is_staff"]:checked').value === 'true';
+    const isSuperuser = document.querySelector('input[name="is_superuser"]')?.checked || false;
+    
+    if (isSuperuser) {
+        document.getElementById('confirmRole').textContent = 'سوپرادمین';
+    } else if (isStaff) {
+        document.getElementById('confirmRole').textContent = 'مدیر سیستم';
+    } else {
+        document.getElementById('confirmRole').textContent = 'کاربر عادی';
+    }
+    
+    document.getElementById('confirmModal').classList.remove('hidden');
+    document.getElementById('confirmModal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    
+    return false; // جلوگیری از ارسال مستقیم فرم
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.add('hidden');
+    document.getElementById('confirmModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+function submitForm() {
+    // ارسال فرم
+    document.getElementById('addUserForm').submit();
+}
+
+// ==================== رویدادهای تغییر ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // اعتبارسنجی لحظه‌ای
+    document.getElementById('password1').addEventListener('input', function() {
+        validatePassword();
+        validatePasswords();
+    });
+    
+    document.getElementById('password2').addEventListener('input', validatePasswords);
+    
+    // به‌روزرسانی پیش‌نمایش
+    const formInputs = document.querySelectorAll('input, textarea');
+    formInputs.forEach(input => {
+        input.addEventListener('input', updatePreview);
+    });
+    
+    // بارگذاری اولیه پیش‌نمایش
+    updatePreview();
+    
+    // مدیریت ارسال فرم
+    document.getElementById('addUserForm').addEventListener('submit', function(event) {
+        if (!event.submitter || !event.submitter.name) {
+            event.preventDefault();
+            validateForm();
+        }
+    });
+});
+
+// ==================== بستن مودال با ESC ====================
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeConfirmModal();
+    }
+});
+
+// ==================== بستن مودال با کلیک خارج ====================
+document.getElementById('confirmModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeConfirmModal();
+    }
+});
+</script>
+{% endblock %}

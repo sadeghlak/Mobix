@@ -1,0 +1,437 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}مدیریت پیام‌های تماس | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">📨 پیام‌های تماس</h1>
+            <p class="text-gray-600 mt-1">مدیریت پیام‌های ارسالی از فرم تماس</p>
+        </div>
+        
+        <!-- فیلترها و آمار -->
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center bg-gray-50 px-4 py-2 rounded-xl">
+                <i class="ti ti-messages text-blue-600 ml-2"></i>
+                <span class="text-gray-700">
+                    <span class="font-bold">{{ total_messages }}</span> پیام
+                </span>
+            </div>
+            
+            <div class="flex items-center bg-green-50 px-4 py-2 rounded-xl">
+                <i class="ti ti-eye-check text-green-600 ml-2"></i>
+                <span class="text-green-700">
+                    <span class="font-bold">{{ unread_count }}</span> خوانده نشده
+                </span>
+            </div>
+            
+            <!-- فیلتر وضعیت -->
+            <div class="relative">
+                <button onclick="toggleFilter()" class="flex items-center bg-white border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-50 transition">
+                    <i class="ti ti-filter ml-2"></i>
+                    فیلتر
+                    <i class="ti ti-chevron-down mr-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- کارت اصلی -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200">
+        <!-- هدر جدول -->
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <!-- جستجو -->
+                <div class="w-full md:w-auto">
+                    <div class="relative">
+                        <input type="text" 
+                               placeholder="جستجو در پیام‌ها..." 
+                               class="w-full md:w-64 bg-gray-50 border border-gray-300 rounded-xl pr-12 pl-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               id="searchInput"
+                               onkeyup="filterMessages()">
+                        <button class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                            <i class="ti ti-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- دکمه‌های عملیاتی -->
+                <div class="flex items-center gap-2">
+                    <!-- خواندن همه -->
+                    <form method="post" action="{% url 'mark_all_read' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="flex items-center gap-2 bg-green-50 text-green-700 hover:bg-green-100 px-4 py-2.5 rounded-xl transition-all">
+                            <i class="ti ti-eye-check"></i>
+                            خواندن همه
+                        </button>
+                    </form>
+                    
+                    <!-- حذف خوانده‌شده‌ها -->
+                    <form method="post" action="{% url 'delete_read' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                onclick="return confirm('آیا از حذف پیام‌های خوانده شده مطمئنید؟')"
+                                class="flex items-center gap-2 bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2.5 rounded-xl transition-all">
+                            <i class="ti ti-trash"></i>
+                            حذف خوانده‌شده‌ها
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- لیست پیام‌ها -->
+        <div class="overflow-x-auto">
+            {% if messages_list %}
+                <table class="w-full admin-table">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">فرستنده</th>
+                            <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">موضوع</th>
+                            <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">پیام</th>
+                            <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">تاریخ</th>
+                            <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">وضعیت</th>
+                            <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for msg in messages_list %}
+                        <tr class="hover:bg-gray-50 transition {% if not msg.is_read %}bg-blue-50{% endif %}" 
+                            id="message-{{ msg.id }}">
+                            <!-- فرستنده -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full 
+                                        {% cycle 'bg-blue-100' 'bg-green-100' 'bg-purple-100' 'bg-pink-100' %} 
+                                        flex items-center justify-center ml-3">
+                                        <span class="{% cycle 'text-blue-600' 'text-green-600' 'text-purple-600' 'text-pink-600' %} font-bold">
+                                            {{ msg.full_name|first }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">{{ msg.full_name }}</p>
+                                        <p class="text-gray-500 text-sm">{{ msg.email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- موضوع -->
+                            <td class="py-4 px-6">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                    {% if msg.subject == 'support' %}bg-blue-100 text-blue-800
+                                    {% elif msg.subject == 'criticism' %}bg-red-100 text-red-800
+                                    {% elif msg.subject == 'suggestion' %}bg-green-100 text-green-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    <i class="ti 
+                                        {% if msg.subject == 'support' %}ti-headset
+                                        {% elif msg.subject == 'criticism' %}ti-alert-circle
+                                        {% elif msg.subject == 'suggestion' %}ti-bulb
+                                        {% else %}ti-dots{% endif %} 
+                                        text-xs ml-1"></i>
+                                    {{ msg.get_subject_display }}
+                                </span>
+                            </td>
+                            
+                            <!-- پیام (مختصر) -->
+                            <td class="py-4 px-6 max-w-xs">
+                                <div class="message-preview">
+                                    <p class="text-gray-700 line-clamp-2">{{ msg.message|truncatechars:100 }}</p>
+                                    {% if msg.message|length > 100 %}
+                                    <button onclick="showFullMessage({{ msg.id }})" 
+                                            class="text-blue-600 hover:text-blue-800 text-sm mt-1">
+                                        مشاهده کامل
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            
+                            <!-- تاریخ -->
+                            <td class="py-4 px-6">
+                                <div class="text-right">
+                                    <p class="text-gray-700">{{ msg.created_at|date:"Y/m/d" }}</p>
+                                    <p class="text-gray-500 text-sm">{{ msg.created_at|time }}</p>
+                                </div>
+                            </td>
+                            
+                            <!-- وضعیت -->
+                            <td class="py-4 px-6">
+                                <form method="post" action="{% url 'toggle_read' msg.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                                {% if msg.is_read %}bg-green-100 text-green-800
+                                                {% else %}bg-red-100 text-red-800{% endif %} 
+                                                hover:opacity-90 transition">
+                                        <i class="ti 
+                                            {% if msg.is_read %}ti-eye-check
+                                            {% else %}ti-eye-off{% endif %} 
+                                            text-xs ml-1"></i>
+                                        {% if msg.is_read %}خوانده شده{% else %}خوانده نشده{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                            
+                            <!-- عملیات -->
+                            <td class="py-4 px-6">
+                                <div class="flex items-center space-x-2 space-x-reverse">
+                                    <!-- مشاهده کامل -->
+                                    <button onclick="showMessageModal({{ msg.id }})" 
+                                            class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition">
+                                        <i class="ti ti-eye"></i>
+                                    </button>
+                                    
+                                    <!-- پاسخ (ایمیل) -->
+                                    <a href="mailto:{{ msg.email }}?subject=پاسخ به پیام شما - {{ msg.get_subject_display }}" 
+                                       class="text-green-600 hover:text-green-800 p-2 rounded-lg hover:bg-green-50 transition">
+                                        <i class="ti ti-mail"></i>
+                                    </a>
+                                    
+                                    <!-- حذف -->
+                                    <form method="post" action="{% url 'delete_message' msg.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" 
+                                                onclick="return confirm('آیا از حذف این پیام مطمئنید؟')"
+                                                class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <!-- حالت خالی -->
+                <div class="text-center py-16">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="ti ti-messages-off text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">هیچ پیامی یافت نشد</h3>
+                    <p class="text-gray-500 max-w-md mx-auto">هنوز هیچ پیامی از فرم تماس دریافت نشده است.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- صفحه‌بندی -->
+        {% if messages_list.has_other_pages %}
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+                <p class="text-gray-600 text-sm">
+                    نمایش {{ messages_list.start_index }} تا {{ messages_list.end_index }} از {{ total_messages }} پیام
+                </p>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    {% if messages_list.has_previous %}
+                    <a href="?page={{ messages_list.previous_page_number }}" 
+                       class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="ti ti-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% for num in messages_list.paginator.page_range %}
+                        {% if messages_list.number == num %}
+                        <span class="px-3 py-2 bg-blue-600 text-white rounded-lg">{{ num }}</span>
+                        {% elif num > messages_list.number|add:'-3' and num < messages_list.number|add:'3' %}
+                        <a href="?page={{ num }}" 
+                           class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if messages_list.has_next %}
+                    <a href="?page={{ messages_list.next_page_number }}" 
+                       class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="ti ti-chevron-left"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- مودال مشاهده کامل پیام -->
+<div id="messageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-900">مشاهده کامل پیام</h3>
+            <button onclick="closeMessageModal()" 
+                    class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition">
+                <i class="ti ti-x text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[60vh]" id="modalContent">
+            <!-- محتوای پیام اینجا لود می‌شه -->
+        </div>
+        <div class="p-6 border-t border-gray-200 bg-gray-50">
+            <div class="flex justify-end space-x-3 space-x-reverse">
+                <button onclick="closeMessageModal()" 
+                        class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">
+                    بستن
+                </button>
+                <button id="replyBtn" 
+                        class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">
+                    <i class="ti ti-mail ml-2"></i>
+                    پاسخ از طریق ایمیل
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* استایل برای پیام‌های خوانده نشده */
+.bg-blue-50 {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* انیمیشن برای ردیف‌ها */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+tr {
+    animation: fadeInUp 0.3s ease-out;
+}
+</style>
+
+<script>
+// ==================== مدیریت مودال ====================
+function showMessageModal(messageId) {
+    const modal = document.getElementById('messageModal');
+    const content = document.getElementById('modalContent');
+    const replyBtn = document.getElementById('replyBtn');
+    
+    // پیام مورد نظر رو پیدا کن
+    const messageRow = document.getElementById(`message-${messageId}`);
+    if (!messageRow) return;
+    
+    // اطلاعات رو جمع‌آوری کن
+    const fullName = messageRow.querySelector('.font-medium').textContent;
+    const email = messageRow.querySelector('.text-gray-500').textContent;
+    const subject = messageRow.querySelector('.inline-flex').textContent.trim();
+    const fullMessage = '{{ msg.message }}'; // اینجا باید با AJAX بیاریم
+    
+    // نمایش در مودال
+    content.innerHTML = `
+        <div class="space-y-6">
+            <!-- اطلاعات فرستنده -->
+            <div class="bg-gray-50 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center ml-3">
+                            <span class="text-blue-600 font-bold text-lg">${fullName.charAt(0)}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">${fullName}</h4>
+                            <p class="text-gray-600">${email}</p>
+                        </div>
+                    </div>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                        ${subject}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-500">
+                    <i class="ti ti-calendar ml-1"></i>
+                    ارسال شده در تاریخ
+                </div>
+            </div>
+            
+            <!-- متن پیام -->
+            <div>
+                <h4 class="font-bold text-gray-800 mb-3">متن پیام:</h4>
+                <div class="bg-gray-50 rounded-xl p-5 whitespace-pre-wrap text-gray-700 leading-relaxed">
+                    در حال بارگذاری...
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // تنظیم لینک پاسخ
+    replyBtn.onclick = function() {
+        window.location.href = `mailto:${email}?subject=پاسخ به پیام شما - ${subject}`;
+    };
+    
+    // نمایش مودال
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    
+    // در آینده با AJAX متن کامل رو بیار
+    fetch(`/dashboard/contact-message/${messageId}/content/`)
+        .then(response => response.json())
+        .then(data => {
+            const messageDiv = content.querySelector('.whitespace-pre-wrap');
+            messageDiv.textContent = data.message || 'متن پیام در دسترس نیست.';
+        });
+}
+
+function closeMessageModal() {
+    const modal = document.getElementById('messageModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+// ==================== جستجوی محلی ====================
+function filterMessages() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toUpperCase();
+        if (text.indexOf(filter) > -1) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// ==================== مدیریت فیلتر ====================
+function toggleFilter() {
+    // در آینده می‌شه فیلترهای پیشرفته اضافه کرد
+    alert('فیلترها در نسخه‌های بعدی اضافه می‌شوند.');
+}
+
+// ==================== مشاهده کامل پیام ====================
+function showFullMessage(messageId) {
+    showMessageModal(messageId);
+}
+
+// ==================== بستن مودال با ESC ====================
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeMessageModal();
+    }
+});
+
+// ==================== بستن مودال با کلیک خارج ====================
+document.getElementById('messageModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeMessageModal();
+    }
+});
+</script>
+{% endblock %}

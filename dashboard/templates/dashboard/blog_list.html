@@ -1,0 +1,545 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}مدیریت مقالات | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">📝 مدیریت مقالات</h1>
+            <p class="text-gray-600 mt-1">مدیریت و انتشار مقالات وبلاگ</p>
+        </div>
+        
+        <!-- آمار و فیلترها -->
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- آمار مقالات -->
+            <div class="flex items-center bg-blue-50 px-4 py-2 rounded-xl">
+                <i class="ti ti-news text-blue-600 ml-2"></i>
+                <span class="text-blue-700">
+                    <span class="font-bold">{{ total_articles }}</span> مقاله
+                </span>
+            </div>
+            
+            <!-- آمار منتشر شده -->
+            <div class="flex items-center bg-green-50 px-4 py-2 rounded-xl">
+                <i class="ti ti-check text-green-600 ml-2"></i>
+                <span class="text-green-700">
+                    <span class="font-bold">{{ published_count }}</span> منتشر شده
+                </span>
+            </div>
+            
+            <!-- آمار پیش‌نویس -->
+            <div class="flex items-center bg-amber-50 px-4 py-2 rounded-xl">
+                <i class="ti ti-edit text-amber-600 ml-2"></i>
+                <span class="text-amber-700">
+                    <span class="font-bold">{{ draft_count }}</span> پیش‌نویس
+                </span>
+            </div>
+            
+            <!-- دکمه افزودن مقاله -->
+            <a href="{% url 'blog_create' %}" 
+               class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all shadow hover:shadow-lg">
+                <i class="ti ti-plus"></i>
+                افزودن مقاله جدید
+            </a>
+        </div>
+    </div>
+    
+    <!-- کارت فیلتر و جستجو -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- جستجو -->
+            <div>
+                <label class="block text-gray-700 mb-2 font-medium">جستجوی مقاله</label>
+                <div class="relative">
+                    <input type="text" 
+                        placeholder="عنوان، محتوا یا نویسنده..."
+                        class="w-full bg-gray-50 border border-gray-300 rounded-xl pr-12 pl-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        id="searchInput"
+                        value="{{ search_query }}">
+                        <!-- onkeyup رو حذف کردیم -->
+                    <button class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        <i class="ti ti-search"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- فیلتر وضعیت -->
+            <div>
+                <label class="block text-gray-700 mb-2 font-medium">وضعیت مقاله</label>
+                <select class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        id="statusFilter">
+                        <!-- onchange رو حذف کردیم -->
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>همه وضعیت‌ها</option>
+                    <option value="published" {% if status_filter == 'published' %}selected{% endif %}>منتشر شده</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>پیش‌نویس</option>
+                </select>
+            </div>
+            
+            <!-- فیلتر دسته‌بندی -->
+            <div>
+                <label class="block text-gray-700 mb-2 font-medium">دسته‌بندی</label>
+                <select class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        id="categoryFilter">
+                        <!-- onchange رو حذف کردیم -->
+                    <option value="all" {% if category_filter == 'all' %}selected{% endif %}>همه دسته‌بندی‌ها</option>
+                    {% for code, name in category_choices %}
+                    <option value="{{ code }}" {% if category_filter == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- دکمه اعمال فیلتر -->
+            <div class="flex items-end">
+                <button onclick="applyFilters()" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all">
+                    <i class="ti ti-filter ml-2"></i>
+                    اعمال فیلتر
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- کارت اصلی لیست مقالات -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <!-- هدر جدول -->
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-900">لیست مقالات</h2>
+                
+                <!-- صادرات و عملیات گروهی -->
+                <div class="flex items-center gap-3">
+                    <!-- عملیات گروهی -->
+                    <select class="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            id="bulkActions"
+                            onchange="handleBulkAction()">
+                        <option value="">عملیات گروهی</option>
+                        <option value="publish">انتشار انتخاب‌ها</option>
+                        <option value="draft">پیش‌نویس کردن</option>
+                        <option value="delete">حذف انتخاب‌ها</option>
+                    </select>
+                    
+                    <!-- تعداد نمایش -->
+                    <select class="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            onchange="changePerPage(this.value)">
+                        <option value="10" {% if per_page == 10 %}selected{% endif %}>۱۰ مورد</option>
+                        <option value="25" {% if per_page == 25 %}selected{% endif %}>۲۵ مورد</option>
+                        <option value="50" {% if per_page == 50 %}selected{% endif %}>۵۰ مورد</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- جدول مقالات -->
+        <div class="overflow-x-auto">
+            {% if articles_list %}
+            <table class="w-full admin-table" id="articlesTable">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">
+                            <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" class="w-5 h-5 text-blue-600 rounded border-gray-300">
+                        </th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">مقاله</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">نویسنده</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">دسته‌بندی</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">تاریخ انتشار</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">وضعیت</th>
+                        <th class="text-right py-4 px-6 text-sm font-semibold text-gray-700">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for article in articles_list %}
+                    <tr class="hover:bg-gray-50 transition" id="article-{{ article.id }}">
+                        <!-- چک‌باکس -->
+                        <td class="py-4 px-6">
+                            <input type="checkbox" 
+                                   name="selected_articles" 
+                                   value="{{ article.id }}"
+                                   class="article-checkbox w-5 h-5 text-blue-600 rounded border-gray-300">
+                        </td>
+                        
+                        <!-- اطلاعات مقاله -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-gray-900 truncate">
+                                            {{ article.title|truncatechars:50 }}
+                                        </h3>
+                                        {% if article.views > 0 %}
+                                        <span class="flex items-center text-xs text-gray-500 whitespace-nowrap">
+                                            <i class="ti ti-eye ml-1"></i>
+                                            {{ article.views }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-gray-500 text-sm truncate mt-1">
+                                        {{ article.content|striptags|truncatechars:20 }}
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- نویسنده -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full 
+                                    {% if article.author.is_staff %}bg-gradient-to-r from-purple-100 to-pink-100
+                                    {% else %}bg-gradient-to-r from-blue-100 to-cyan-100{% endif %} 
+                                    flex items-center justify-center ml-3">
+                                    <span class="{% if article.author.is_staff %}text-purple-600{% else %}text-blue-600{% endif %} font-bold">
+                                        {{ article.author.username|first|upper }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">
+                                        {{ article.author.get_full_name|default:article.author.username }}
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- دسته‌بندی -->
+                        <td class="py-4 px-6">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                {% if article.category == 'tech' %}bg-blue-100 text-blue-800
+                                {% elif article.category == 'game' %}bg-purple-100 text-purple-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                <i class="ti 
+                                    {% if article.category == 'tech' %}ti-devices
+                                    {% elif article.category == 'game' %}ti-device-gamepad
+                                    {% else %}ti-school{% endif %} 
+                                    text-xs ml-1"></i>
+                                {{ article.get_category_display_fa }}
+                            </span>
+                        </td>
+                        
+                        <!-- تاریخ انتشار -->
+                        <td class="py-4 px-6">
+                            <div class="text-right">
+                                <p class="text-gray-700">{{ article.publish_date|date:"Y/m/d" }}</p>
+                            </div>
+                        </td>
+                        
+                        <!-- وضعیت -->
+                        <td class="py-4 px-6">
+                            <div class="space-y-2">
+                                <!-- وضعیت انتشار -->
+                                <form method="post" action="{% url 'toggle_article_status' article.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('آیا از تغییر وضعیت مقاله مطمئنید؟')"
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                                {% if article.status == 'published' %}bg-green-100 text-green-800 hover:bg-green-200
+                                                {% else %}bg-amber-100 text-amber-800 hover:bg-amber-200{% endif %} 
+                                                transition">
+                                        <i class="ti 
+                                            {% if article.status == 'published' %}ti-check
+                                            {% else %}ti-edit{% endif %} 
+                                            text-xs ml-1"></i>
+                                        {% if article.status == 'published' %}منتشر شده{% else %}پیش‌نویس{% endif %}
+                                    </button>
+                                </form>
+                                
+                                
+                            </div>
+                        </td>
+                        
+                        <!-- عملیات -->
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-2 space-x-reverse">
+                                <!-- مشاهده جزئیات -->
+                                <a href="{% url 'blog_detail' article.id %}" 
+                                   class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                
+                                <!-- ویرایش -->
+                                <a href="{% url 'blog_edit' article.id %}" 
+                                   class="text-green-600 hover:text-green-800 p-2 rounded-lg hover:bg-green-50 transition">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                
+                                <!-- حذف -->
+                                <form method="post" action="{% url 'blog_delete' article.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            onclick="return confirm('آیا از حذف این مقاله مطمئنید؟ این عمل غیرقابل بازگشت است!')"
+                                            class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <!-- حالت خالی -->
+            <div class="text-center py-16">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="ti ti-news-off text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">هیچ مقاله‌ای یافت نشد</h3>
+                <p class="text-gray-500 max-w-md mx-auto mb-6">
+                    {% if search_query %}
+                    نتیجه‌ای برای "{{ search_query }}" یافت نشد.
+                    {% else %}
+                    هنوز هیچ مقاله‌ای در سیستم ثبت نشده است.
+                    {% endif %}
+                </p>
+                <a href="{% url 'blog_create' %}" 
+                   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-xl transition-all">
+                    <i class="ti ti-plus"></i>
+                    افزودن اولین مقاله
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- صفحه‌بندی -->
+        {% if articles_list.has_other_pages %}
+        <div class="p-6 border-t border-gray-200">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- اطلاعات صفحه -->
+                <p class="text-gray-600 text-sm">
+                    نمایش {{ articles_list.start_index }} تا {{ articles_list.end_index }} از {{ total_articles }} مقاله
+                </p>
+                
+                <!-- ناوبری صفحات -->
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    {% if articles_list.has_previous %}
+                    <a href="?page={{ articles_list.previous_page_number }}&per_page={{ per_page }}&search={{ search_query }}&status={{ status_filter }}&category={{ category_filter }}" 
+                       class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="ti ti-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% for num in articles_list.paginator.page_range %}
+                        {% if articles_list.number == num %}
+                        <span class="px-3 py-2 bg-blue-600 text-white rounded-lg">{{ num }}</span>
+                        {% elif num > articles_list.number|add:'-3' and num < articles_list.number|add:'3' %}
+                        <a href="?page={{ num }}&per_page={{ per_page }}&search={{ search_query }}&status={{ status_filter }}&category={{ category_filter }}" 
+                           class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if articles_list.has_next %}
+                    <a href="?page={{ articles_list.next_page_number }}&per_page={{ per_page }}&search={{ search_query }}&status={{ status_filter }}&category={{ category_filter }}" 
+                       class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="ti ti-chevron-left"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- مودال تأیید عملیات گروهی -->
+<div id="bulkActionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-900" id="modalTitle">تأیید عملیات گروهی</h3>
+        </div>
+        <div class="p-6">
+            <p id="modalMessage" class="text-gray-700 mb-6">
+                آیا از انجام این عملیات بر روی مقالات انتخاب شده مطمئن هستید؟
+            </p>
+            <div class="flex justify-end space-x-3 space-x-reverse">
+                <button onclick="closeBulkModal()" 
+                        class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">
+                    انصراف
+                </button>
+                <button onclick="confirmBulkAction()" 
+                        class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">
+                    تأیید و اجرا
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* استایل‌های سفارشی */
+.article-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* انیمیشن برای ردیف‌ها */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+tr {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* محدودیت عرض برای عکس */
+.w-16 {
+    width: 4rem;
+}
+.h-16 {
+    height: 4rem;
+}
+</style>
+
+<script>
+// ==================== مدیریت انتخاب گروهی ====================
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.article-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+}
+
+// ==================== فیلتر جدول ====================
+function applyFilters() {
+    const search = document.getElementById('searchInput').value;
+    const status = document.getElementById('statusFilter').value;
+    const category = document.getElementById('categoryFilter').value;
+    
+    // ساخت URL جدید با پارامترهای فیلتر
+    let url = `?per_page={{ per_page }}`;
+    
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status !== 'all') url += `&status=${status}`;
+    if (category !== 'all') url += `&category=${category}`;
+    
+    // همیشه به صفحه اول برگردیم
+    url += '&page=1';
+    
+    window.location.href = url;
+}
+
+// ==================== فعال کردن Enter برای جستجو ====================
+document.getElementById('searchInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        applyFilters();
+    }
+});
+
+// ==================== تغییر تعداد نمایش در صفحه ====================
+function changePerPage(value) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('per_page', value);
+    currentUrl.searchParams.set('page', '1'); // برگشت به صفحه اول
+    window.location.href = currentUrl.toString();
+}
+
+// ==================== مدیریت عملیات گروهی ====================
+let currentBulkAction = '';
+
+function handleBulkAction() {
+    const select = document.getElementById('bulkActions');
+    const action = select.value;
+    
+    if (!action) return;
+    
+    // بررسی انتخاب مقالات
+    const selectedArticles = document.querySelectorAll('.article-checkbox:checked');
+    if (selectedArticles.length === 0) {
+        alert('لطفاً حداقل یک مقاله را انتخاب کنید.');
+        select.value = '';
+        return;
+    }
+    
+    currentBulkAction = action;
+    
+    // تنظیم متن مودال
+    const actionTitles = {
+        'publish': 'انتشار مقالات',
+        'draft': 'تغییر به پیش‌نویس',
+        'delete': 'حذف مقالات'
+    };
+    
+    document.getElementById('modalTitle').textContent = actionTitles[action];
+    document.getElementById('modalMessage').textContent = 
+        `آیا از ${actionTitles[action]} برای ${selectedArticles.length} مقاله انتخاب شده مطمئن هستید؟`;
+    
+    // نمایش مودال
+    document.getElementById('bulkActionModal').classList.remove('hidden');
+    document.getElementById('bulkActionModal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBulkModal() {
+    document.getElementById('bulkActionModal').classList.add('hidden');
+    document.getElementById('bulkActionModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+    document.getElementById('bulkActions').value = '';
+    currentBulkAction = '';
+}
+
+function confirmBulkAction() {
+    const selectedArticles = Array.from(document.querySelectorAll('.article-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedArticles.length === 0) {
+        alert('هیچ مقاله‌ای انتخاب نشده است.');
+        closeBulkModal();
+        return;
+    }
+    
+    // ارسال درخواست به سرور
+    fetch('{% url "bulk_articles_action" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            action: currentBulkAction,
+            articles: selectedArticles
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('خطا: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('خطا در ارتباط با سرور');
+        console.error(error);
+    });
+    
+    closeBulkModal();
+}
+
+// ==================== بستن مودال با ESC ====================
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeBulkModal();
+    }
+});
+
+// ==================== بستن مودال با کلیک خارج ====================
+document.getElementById('bulkActionModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeBulkModal();
+    }
+});
+</script>
+{% endblock %}

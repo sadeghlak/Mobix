@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.title }} | Mobix{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- مسیر ناوبری -->
+    <nav class="mb-8 text-sm text-gray-600">
+        <a href="/" class="hover:text-blue-600">خانه</a>
+        <i class="ti ti-chevron-left mx-2"></i>
+        <a href="{% url 'blog_list_view' %}" class="hover:text-blue-600">مقالات</a>
+        <i class="ti ti-chevron-left mx-2"></i>
+        <span class="text-gray-800 font-medium">{{ article.title|truncatechars:50 }}</span>
+    </nav>
+
+    <!-- هدر مقاله -->
+    <header class="mb-10">
+        <!-- دسته‌بندی و تاریخ -->
+        <div class="flex flex-wrap gap-4 items-center mb-4">
+            <span class="px-4 py-2 bg-blue-100 text-blue-600 rounded-full font-medium">
+                {{ article.get_category_display_fa }}
+            </span>
+            <div class="flex items-center text-gray-500">
+                <i class="ti ti-calendar ml-2"></i>
+                {{ article.publish_date|date:"d فروردین Y" }}
+            </div>
+            <div class="flex items-center text-gray-500">
+                <i class="ti ti-eye ml-2"></i>
+                {{ article.views }} بازدید
+            </div>
+            <div class="flex items-center text-gray-500">
+                <i class="ti ti-user ml-2"></i>
+                {{ article.author.get_full_name|default:article.author.username }}
+            </div>
+        </div>
+        
+        <!-- عنوان -->
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 leading-tight mb-6">
+            {{ article.title }}
+        </h1>
+        
+        <!-- عکس اصلی -->
+        {% if article.image %}
+        <div class="rounded-2xl overflow-hidden shadow-xl mb-8">
+            <img src="{{ article.image.url }}" 
+                 alt="{{ article.title }}" 
+                 class="w-full h-auto max-h-[500px] object-cover">
+        </div>
+        {% endif %}
+    </header>
+
+    <!-- محتوای مقاله -->
+    <article class="prose prose-lg max-w-none mb-12">
+        <div class="text-gray-700 leading-relaxed text-lg">
+            {{ article.content|linebreaks }}
+        </div>
+        
+        <!-- تگ‌ها (در صورت نیاز) -->
+        <div class="flex flex-wrap gap-2 mt-10 pt-8 border-t border-gray-200">
+            <span class="font-medium text-gray-800">برچسب‌ها:</span>
+            <a href="#" class="px-4 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition">موبایل</a>
+            <a href="#" class="px-4 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition">آموزش</a>
+            <a href="#" class="px-4 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition">تکنولوژی</a>
+        </div>
+    </article>
+
+    <!-- مقالات مرتبط -->
+    {% if related_articles %}
+    <div class="mt-16 pt-12 border-t border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-800 mb-8">مقالات مرتبط</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+            {% for related in related_articles %}
+            <a href="{% url 'blog_detail_view' related.id %}" 
+               class="bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden">
+                {% if related.image %}
+                <div class="h-40 overflow-hidden">
+                    <img src="{{ related.image.url }}" 
+                         alt="{{ related.title }}" 
+                         class="w-full h-full object-cover hover:scale-105 transition-transform">
+                </div>
+                {% endif %}
+                <div class="p-4">
+                    <h3 class="font-bold text-gray-800 mb-2 line-clamp-2">{{ related.title }}</h3>
+                    <div class="text-sm text-gray-500">
+                        {{ related.publish_date|date:"Y/m/d" }}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- اشتراک‌گذاری -->
+    <div class="mt-12 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">این مقاله را به اشتراک بگذارید</h3>
+        <div class="flex gap-4">
+            <a href="#" class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition">
+                <i class="ti ti-brand-telegram"></i>
+            </a>
+            <a href="#" class="w-12 h-12 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition">
+                <i class="ti ti-brand-twitter"></i>
+            </a>
+            <a href="#" class="w-12 h-12 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-black transition">
+                <i class="ti ti-brand-linkedin"></i>
+            </a>
+            <a href="#" class="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition">
+                <i class="ti ti-brand-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- دکمه بازگشت -->
+    <div class="mt-10 text-center">
+        <a href="{% url 'blog_list_view' %}" 
+           class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-medium">
+            <i class="ti ti-chevron-right ml-2"></i>
+            بازگشت به لیست مقالات
+        </a>
+    </div>
+</div>
+{% endblock %}

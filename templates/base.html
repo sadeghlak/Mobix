@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mobix - فروشگاه موبایل{% endblock %}</title>
+    <meta name="description" content="فروشگاه تخصصی موبایل و لوازم جانبی با بهترین قیمت و کیفیت">
+    
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- فونت Vazir -->
+    <link href="https://v1.fontapi.ir/css/Vazir" rel="stylesheet">
+    
+    <!-- آیکون‌های Tabler -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    
+    <!-- استایل‌های سفارشی -->
+    <style>
+        * {
+            font-family: Vazir, sans-serif;
+        }
+        
+        /* انیمیشن‌ها */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* اسکرول بار زیبا */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* کلاس‌های سفارشی */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .group:hover .group-hover\:visible {
+            visibility: visible;
+        }
+
+        .group:hover .group-hover\:opacity-100 {
+            opacity: 1;
+        }
+
+        
+        
+
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- نوار اطلاع‌رسانی -->
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center py-2 px-4">
+        <div class="container mx-auto">
+            <p class="text-sm md:text-base">
+                🚚 <span class="font-bold">ارسال رایگان</span> برای خریدهای بالای ۱ میلیون تومان | 
+                ⚡ <span class="font-bold">تخفیف ویژه</span> اولین خرید
+            </p>
+        </div>
+    </div>
+    
+    <!-- هدر اصلی -->
+    <header class="z-40 bg-white shadow-lg">  <!-- sticky و backdrop-blur رو حذف کردم -->
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <!-- لوگو -->
+                <div class="flex items-center space-x-5"> 
+                    <a href="/" class="flex items-center space-x-5 no-underline group"> 
+                        <div class="w-16 h-16 rounded-xl overflow-hidden shadow-lg">
+                            <img src="/static/images/mobix_logo.png" 
+                                alt="Mobix Logo" 
+                                class="w-full h-full object-cover scale-110">
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold mr-3 text-gray-800">Mobix</div>
+                            <div class="text-xs mr-3 text-gray-500">فروشگاه تخصصی موبایل</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- جستجو -->
+                <div class="hidden md:block flex-1 max-w-2xl mx-8">
+                    <div class="relative">
+                        <input type="text" 
+                            placeholder="جستجوی محصولات، برندها، مدل‌ها..." 
+                            class="w-full py-3 px-6 pr-12 bg-gray-100 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600">
+                            <i class="ti ti-search text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- منوی کاربر -->
+                
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    {% if user.is_authenticated %}
+                        <!-- نمایش پنل کاربری وقتی کاربر وارد شده -->
+                        <div class="relative group">
+                            <a href="{% url 'profile' %}" 
+                            class="flex items-center space-x-2 space-x-reverse px-5 py-2.5 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
+                                <i class="ti ti-user-circle"></i>
+                                <span>پنل کاربری</span>
+                                <i class="ti ti-chevron-down text-sm"></i>
+                            </a>
+                            
+                            <!-- نمایش نام کاربر -->
+                            <p class="absolute -bottom-6 left-0 right-0 text-center text-xs text-gray-700 whitespace-nowrap">
+                                {% if user.get_full_name %}
+                                    {{ user.get_full_name }}
+                                {% else %}
+                                    {{ user.username }}
+                                {% endif %}
+                            </p>
+                            
+                            <!-- منوی دراپ‌داون (اختیاری) -->
+                            <div class="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                <a href="{% url 'profile' %}" class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-800 transition">
+                                    <i class="ti ti-user ml-2"></i>
+                                    پروفایل من
+                                </a>
+                                <a href="#" class="flex items-center px-4 py-3 hover:bg-gray-100 text-gray-800 transition">
+                                    <i class="ti ti-shopping-cart ml-2"></i>
+                                    سفارش‌های من
+                                </a>
+                                <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 hover:bg-gray-100 text-red-600 transition">
+                                    <i class="ti ti-logout ml-2"></i>
+                                    خروج
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- دکمه ورود/ثبت‌نام برای کاربران مهمان -->
+                        <div class="relative">
+                            <a href="{% url 'login' %}" 
+                            class="flex items-center space-x-2 space-x-reverse px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl">
+                                <i class="ti ti-login"></i>
+                                <span>ورود / ثبت‌نام</span>
+                            </a>
+                            
+                            <!-- نکته کوچک زیر دکمه -->
+                            <p class="absolute -bottom-6 left-0 right-0 text-center text-xs text-gray-500 whitespace-nowrap">
+                                کاربر مهمان
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+            </div>
+            
+            <!-- منوی اصلی -->
+            <nav class="mt-4 hidden md:flex space-x-8 mr-auto">
+                <a href="/" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium py-2 border-b-2 border-transparent hover:border-blue-600 transition">
+                    <i class="ti ti-home"></i>
+                    <span>خانه</span>
+                </a>
+                <a href="/products/" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium py-2 border-b-2 border-transparent hover:border-blue-600 transition">
+                    <i class="ti ti-devices"></i>
+                    <span>محصولات</span>
+                </a>
+                <a href="/blog/" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium py-2 border-b-2 border-transparent hover:border-blue-600 transition">
+                    <i class="ti ti-news"></i>
+                    <span>مقالات</span>
+                </a>
+                <a href="/about/" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium py-2 border-b-2 border-transparent hover:border-blue-600 transition">
+                    <i class="ti ti-info-circle"></i>
+                    <span>درباره ما</span>
+                </a>
+                <a href="/contact/" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium py-2 border-b-2 border-transparent hover:border-blue-600 transition">
+                    <i class="ti ti-headset"></i>
+                    <span>پشتیبانی</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- محتوای اصلی -->
+    <main class="flex-grow container mx-auto px-4 py-8 animate-fade-in">
+        <!-- پیام‌های سیستم -->
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}
+        <!-- محتوای صفحات اینجا قرار می‌گیرد -->
+        {% endblock %}
+    </main>
+    
+    <!-- فوتر -->
+    <footer class="bg-gradient-to-b from-gray-900 to-black text-white pt-12 pb-6 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                
+                <!-- درباره -->
+                 <div>
+                    <!-- بخش لوگو و نام -->
+                    <a href="/" class="inline-block group">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <!-- لوگو -->
+                            <div class="w-16 h-16 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition">
+                                <img src="/static/images/mobix_logo.png" 
+                                    alt="Mobix Logo" 
+                                    class="w-full h-full object-cover scale-110 group-hover:scale-105 transition-transform">
+                            </div>
+                            
+                            <!-- نام -->
+                            <div>
+                                <h3 class="text-2xl font-bold text-white group-hover:text-blue-400 transition">Mobix</h3>
+                                <p class="text-sm text-gray-400">فروشگاه تخصصی موبایل</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- متن درباره ما -->
+                    <p class="text-gray-300 leading-relaxed">
+                        ما با بیش از ۱۰ سال تجربه در زمینه فروش موبایل و لوازم جانبی، بهترین‌ها را برای شما فراهم می‌کنیم.
+                    </p>
+                    
+                    <!-- شبکه‌های اجتماعی -->
+                    <div class="flex space-x-4 space-x-reverse mt-6">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition transform hover:-translate-y-1">
+                            <i class="ti ti-brand-telegram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-pink-600 transition transform hover:-translate-y-1">
+                            <i class="ti ti-brand-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-400 transition transform hover:-translate-y-1">
+                            <i class="ti ti-brand-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                
+                <!-- لینک‌ها -->
+                <div>
+                    <h4 class="text-lg font-bold mb-6 pb-2 border-b border-gray-700">دسترسی سریع</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/products/" class="text-gray-300 hover:text-white transition flex items-center space-x-2"><i class="ti ti-chevron-left"></i><span>محصولات</span></a></li>
+                        <li><a href="/blog/" class="text-gray-300 hover:text-white transition flex items-center space-x-2"><i class="ti ti-chevron-left"></i><span>مقالات آموزشی</span></a></li>
+                        <li><a href="/about/" class="text-gray-300 hover:text-white transition flex items-center space-x-2"><i class="ti ti-chevron-left"></i><span>درباره ما</span></a></li>
+                        <li><a href="/contact/" class="text-gray-300 hover:text-white transition flex items-center space-x-2"><i class="ti ti-chevron-left"></i><span>تماس با ما</span></a></li>
+                    </ul>
+                </div>
+                
+                <!-- خدمات -->
+                <div>
+                    <h4 class="text-lg font-bold mb-6 pb-2 border-b border-gray-700">خدمات ویژه</h4>
+                    <ul class="space-y-3">
+                        <li class="text-gray-300 flex items-center space-x-2"><i class="ti ti-check text-green-500"></i><span>ارسال رایگان</span></li>
+                        <li class="text-gray-300 flex items-center space-x-2"><i class="ti ti-check text-green-500"></i><span>گارانتی طلایی</span></li>
+                        <li class="text-gray-300 flex items-center space-x-2"><i class="ti ti-check text-green-500"></i><span>بازگشت ۷ روزه</span></li>
+                        <li class="text-gray-300 flex items-center space-x-2"><i class="ti ti-check text-green-500"></i><span>پشتیبانی فنی</span></li>
+                    </ul>
+                </div>
+                
+                <!-- تماس -->
+                <div>
+                    <h4 class="text-lg font-bold mb-6 pb-2 border-b border-gray-700">ارتباط با ما</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3">
+                            <i class="ti ti-phone text-blue-400 mt-1"></i>
+                            <div>
+                                <p class="font-bold">شماره تماس</p>
+                                <p class="text-gray-300">۰۲۱-۱۲۳۴۵۶۷۸</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="ti ti-mail text-blue-400 mt-1"></i>
+                            <div>
+                                <p class="font-bold">ایمیل</p>
+                                <p class="text-gray-300">support@mobix.com</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="ti ti-map-pin text-blue-400 mt-1"></i>
+                            <div>
+                                <p class="font-bold">آدرس</p>
+                                <p class="text-gray-300">تهران، خیابان ولیعصر، پلاک ۱۲۳</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+            </div>
+            
+            <!-- خط جداکننده -->
+            <div class="border-t border-gray-800 mt-12 pt-6">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">© Mobix. تمامی حقوق محفوظ است.</p>
+                    <div class="flex space-x-6 mt-4 md:mt-0">
+                        <a href="/terms/" class="text-gray-400 hover:text-white text-sm ml-4">قوانین و مقررات</a>
+                        <a href="/privacy/" class="text-gray-400 hover:text-white text-sm ml-4">حریم خصوصی</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm ml-4">سوالات متداول</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- دکمه بازگشت به بالا -->
+    <button id="scrollTop" class="fixed bottom-8 left-8 w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:shadow-xl transition opacity-0 invisible">
+        <i class="ti ti-arrow-up text-xl"></i>
+    </button>
+    
+    <!-- اسکریپت‌ها -->
+    <script>
+        // دکمه بازگشت به بالا
+        const scrollTopBtn = document.getElementById('scrollTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollTopBtn.classList.remove('opacity-0', 'invisible');
+                scrollTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                scrollTopBtn.classList.remove('opacity-100', 'visible');
+                scrollTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // منوی موبایل (ساده)
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Mobix Store Loaded 🚀');
+            
+            // انیمیشن کارت‌ها
+            const cards = document.querySelectorAll('.card-hover');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.classList.add('shadow-xl');
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.classList.remove('shadow-xl');
+                });
+            });
+            
+            // نمایش پیام خوش‌آمدگویی
+            setTimeout(() => {
+                console.log('✅ Tailwind CDN Active');
+                console.log('✅ All Components Loaded');
+            }, 1000);
+        });
+
+        // نمایش مُدال خروج
+        function showLogoutModal() {
+            const modal = document.getElementById('logoutModal');
+            const content = document.getElementById('modalContent');
+            
+            // جلوگیری از اسکرول صفحه هنگام نمایش مُدال
+            document.body.style.overflow = 'hidden';
+            
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

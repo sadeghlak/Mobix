@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}تماس با ما | Mobix{% endblock %}
+
+{% block content %}
+    <main class="container mx-auto px-4 py-12">
+        <!-- هدینگ با گرادینت رنگ -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                تماس با ما
+            </h1>
+            <p class="text-gray-600 text-lg">سوالات، پیشنهادات و انتقادات خود را با ما در میان بگذارید</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-12">
+            <!-- فرم تماس -->
+            {% comment %} <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">پیام خود را ارسال کنید</h2>
+                <form class="space-y-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">نام و نام خانوادگی</label>
+                        <input type="text" 
+                               class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">ایمیل</label>
+                        <input type="email" 
+                               class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">موضوع</label>
+                        <select class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <option>پیشنهاد</option>
+                            <option>انتقاد</option>
+                            <option>پشتیبانی</option>
+                            <option>همکاری</option>
+                            <option>سایر</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">پیام شما</label>
+                        <textarea rows="5" 
+                                  class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"></textarea>
+                    </div>
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                        <i class="ti ti-send ml-2"></i>
+                        ارسال پیام
+                    </button>
+                </form>
+            </div>  {% endcomment %}
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">پیام خود را ارسال کنید</h2>
+                
+                <!-- نمایش پیام‌های Django -->
+                {% if messages %}
+                <div class="mb-6 space-y-3">
+                    {% for message in messages %}
+                    <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200{% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- فرم Django -->
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}  <!-- ضروری برای امنیت -->
+                    
+                    <!-- فیلد نام -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.full_name.label }}</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.full_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- فیلد ایمیل -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- فیلد موضوع -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.subject.label }}</label>
+                        {{ form.subject }}
+                    </div>
+                    
+                    <!-- فیلد پیام -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.message.label }}</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.message.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- دکمه ارسال -->
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                        <i class="ti ti-send ml-2"></i>
+                        ارسال پیام
+                    </button>
+                </form>
+            </div>
+            {% comment %} <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">پیام خود را ارسال کنید</h2>
+                
+                <!-- نمایش پیام‌های سیستم -->
+                {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                    <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200{% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.full_name.label }}</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.full_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.subject.label }}</label>
+                        {{ form.subject }}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">{{ form.message.label }}</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.message.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                        <i class="ti ti-send ml-2"></i>
+                        ارسال پیام
+                    </button>
+                </form>
+            </div> {% endcomment %}
+
+
+            <!-- اطلاعات تماس -->
+            <div class="space-y-8">
+                <!-- کارت اطلاعات -->
+                <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl border border-blue-100">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800">اطلاعات تماس</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4 space-x-reverse">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="ti ti-mail text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-700">ایمیل</p>
+                                <p class="text-gray-600">info@mobix.ir</p>
+                                <p class="text-gray-600 text-sm mt-1">پاسخگویی در ۲۴ ساعت</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 space-x-reverse">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="ti ti-phone text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-700">تلفن پشتیبانی</p>
+                                <p class="text-gray-600">۰۲۱-۱۲۳۴۵۶۷۸</p>
+                                <p class="text-gray-600 text-sm mt-1">شنبه تا چهارشنبه ۹-۱۸</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 space-x-reverse">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="ti ti-map-pin text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-700">آدرس فروشگاه</p>
+                                <p class="text-gray-600">تهران، خیابان آزادی، برج Mobix، طبقه ۵</p>
+                                <p class="text-gray-600 text-sm mt-1">بازدید حضوری با هماهنگی قبلی</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- کارت ساعات کاری -->
+                <div class="bg-gradient-to-br from-gray-50 to-white p-8 rounded-2xl border border-gray-200 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800">ساعات کاری</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                            <span class="text-gray-700">شنبه تا چهارشنبه</span>
+                            <span class="font-bold text-blue-600">۹:۰۰ - ۱۸:۰۰</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                            <span class="text-gray-700">پنجشنبه</span>
+                            <span class="font-bold text-blue-600">۹:۰۰ - ۱۴:۰۰</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">جمعه و تعطیلات</span>
+                            <span class="font-bold text-red-500">تعطیل</span>
+                        </div>
+                    </div>
+                    
+                    <!-- نکته مهم -->
+                    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                        <p class="text-yellow-700 text-sm flex items-center">
+                            <i class="ti ti-info-circle ml-2"></i>
+                            در ساعات غیرکاری می‌توانید از طریق فرم تماس پیام بگذارید.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- بخش پشتیبانی آنلاین -->
+        <div class="mt-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 text-white">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h3 class="text-2xl font-bold mb-2">پشتیبانی آنلاین</h3>
+                    <p class="opacity-90">برای پاسخ سریع‌تر با ما در ارتباط باشید</p>
+                </div>
+                <div class="flex space-x-4 space-x-reverse mt-6 md:mt-0">
+                    <a href="#" class="bg-white text-blue-600 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition flex items-center">
+                        <i class="ti ti-brand-whatsapp ml-2"></i>
+                        واتس‌اپ
+                    </a>
+                    <a href="#" class="bg-white text-blue-600 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition flex items-center">
+                        <i class="ti ti-brand-telegram ml-2"></i>
+                        تلگرام
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

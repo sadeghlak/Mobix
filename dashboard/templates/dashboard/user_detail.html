@@ -1,0 +1,378 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}مشاهده کاربر {{ user.username }} | Mobix{% endblock %}
+
+{% block content %}
+<div class="space-y-6 fade-in">
+    <!-- هدر صفحه -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'users_list' %}" 
+               class="text-gray-500 hover:text-gray-700 transition">
+                <i class="ti ti-arrow-right text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">👤 مشاهده کاربر</h1>
+                <p class="text-gray-600 mt-1">جزئیات کامل حساب کاربری</p>
+            </div>
+        </div>
+        
+        <!-- دکمه‌های عملیاتی -->
+        <div class="flex items-center gap-3">
+            <a href="{% url 'edit_user' user.id %}" 
+               class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all">
+                <i class="ti ti-edit"></i>
+                ویرایش کاربر
+            </a>
+            
+            <!-- کپی لینک پروفایل -->
+            <button onclick="copyUserLink()" 
+                    class="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2.5 px-4 rounded-xl transition-all">
+                <i class="ti ti-link"></i>
+                کپی لینک
+            </button>
+        </div>
+    </div>
+    
+    <!-- کارت‌های اصلی -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ستون چپ: اطلاعات کاربر -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- کارت اطلاعات اصلی -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">
+                    اطلاعات حساب کاربری
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- آواتار و نام کاربری -->
+                    <div class="md:col-span-2">
+                        <div class="flex items-center gap-4">
+                            <div class="w-24 h-24 rounded-2xl 
+                                {% if user.is_staff %}bg-gradient-to-r from-purple-500 to-pink-500
+                                {% else %}bg-gradient-to-r from-blue-500 to-cyan-500{% endif %} 
+                                flex items-center justify-center text-white text-4xl font-bold">
+                                {{ user.username|first|upper }}
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-900">
+                                    {{ user.get_full_name|default:user.username }}
+                                </h3>
+                                <p class="text-gray-600 mt-1">@{{ user.username }}</p>
+                                
+                                <!-- بج های وضعیت -->
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <!-- وضعیت فعال -->
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                        {% if user.is_active %}bg-green-100 text-green-800
+                                        {% else %}bg-red-100 text-red-800{% endif %}">
+                                        <i class="ti 
+                                            {% if user.is_active %}ti-user-check
+                                            {% else %}ti-user-off{% endif %} 
+                                            text-xs ml-1"></i>
+                                        {% if user.is_active %}فعال{% else %}غیرفعال{% endif %}
+                                    </span>
+                                    
+                                    <!-- نقش -->
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                        {% if user.is_superuser %}bg-red-100 text-red-800
+                                        {% elif user.is_staff %}bg-purple-100 text-purple-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        <i class="ti 
+                                            {% if user.is_superuser %}ti-crown
+                                            {% elif user.is_staff %}ti-shield
+                                            {% else %}ti-user{% endif %} 
+                                            text-xs ml-1"></i>
+                                        {% if user.is_superuser %}سوپرادمین
+                                        {% elif user.is_staff %}مدیر سیستم
+                                        {% else %}کاربر عادی{% endif %}
+                                    </span>
+                                    
+                                    <!-- تاریخ عضویت -->
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <i class="ti ti-calendar text-xs ml-1"></i>
+                                        عضو از {{ user.date_joined|date:"Y/m/d" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- اطلاعات تماس -->
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-3">اطلاعات تماس</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center ml-3">
+                                    <i class="ti ti-mail"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">ایمیل</p>
+                                    <a href="mailto:{{ user.email }}" class="text-gray-900 font-medium hover:text-blue-600">
+                                        {{ user.email }}
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            {% if user.profile.phone %}
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center ml-3">
+                                    <i class="ti ti-phone"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">تلفن همراه</p>
+                                    <a href="tel:{{ user.profile.phone }}" class="text-gray-900 font-medium hover:text-green-600">
+                                        {{ user.profile.phone }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- اطلاعات شخصی -->
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-3">اطلاعات شخصی</h4>
+                        <div class="space-y-3">
+                            {% if user.first_name or user.last_name %}
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center ml-3">
+                                    <i class="ti ti-id"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">نام کامل</p>
+                                    <p class="text-gray-900 font-medium">
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center ml-3">
+                                    <i class="ti ti-calendar"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">آخرین ورود</p>
+                                    <p class="text-gray-900 font-medium">
+                                        {% if user.last_login %}
+                                        {{ user.last_login|timesince }} پیش
+                                        {% else %}
+                                        هنوز وارد نشده
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- کارت آدرس -->
+            {% if user.profile.address %}
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">آدرس کاربر</h2>
+                <div class="bg-gray-50 rounded-xl p-5 whitespace-pre-wrap text-gray-700">
+                    {{ user.profile.address }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- ستون راست: آمار و عملیات -->
+        <div class="space-y-6">
+            <!-- کارت آمار -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">آمار کاربر</h3>
+                
+                <div class="space-y-4">
+                    <!-- درصد تکمیل پروفایل -->
+                    <div>
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>تکمیل پروفایل</span>
+                            <span>{{ user.profile.profile_completion_percentage }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" 
+                                 style="width: {{ user.profile.profile_completion_percentage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- تاریخ‌ها -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 text-sm">تاریخ عضویت:</span>
+                            <span class="font-medium">{{ user.date_joined|date:"Y/m/d" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 text-sm">ساعت عضویت:</span>
+                            <span class="font-medium">{{ user.date_joined|time }}</span>
+                        </div>
+                        {% if user.last_login %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 text-sm">آخرین ورود:</span>
+                            <span class="font-medium">{{ user.last_login|date:"Y/m/d H:i" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- کارت عملیات سریع -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">عملیات سریع</h3>
+                
+                <div class="space-y-3">
+                    <!-- فعال/غیرفعال -->
+                    <form method="post" action="{% url 'toggle_user_active' user.id %}" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                onclick="return confirm('آیا از تغییر وضعیت کاربر مطمئنید؟')"
+                                class="w-full flex items-center justify-center gap-2 
+                                    {% if user.is_active %}bg-red-50 text-red-700 hover:bg-red-100
+                                    {% else %}bg-green-50 text-green-700 hover:bg-green-100{% endif %} 
+                                    font-medium py-2.5 px-4 rounded-xl transition-all">
+                            <i class="ti {% if user.is_active %}ti-user-off{% else %}ti-user-check{% endif %}"></i>
+                            {% if user.is_active %}غیرفعال کردن{% else %}فعال کردن{% endif %} کاربر
+                        </button>
+                    </form>
+                    
+                    <!-- تغییر نقش -->
+                    <form method="post" action="{% url 'toggle_user_staff' user.id %}" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                onclick="return confirm('آیا از تغییر نقش کاربر مطمئنید؟')"
+                                class="w-full flex items-center justify-center gap-2 
+                                    {% if user.is_staff %}bg-gray-100 text-gray-700 hover:bg-gray-200
+                                    {% else %}bg-purple-50 text-purple-700 hover:bg-purple-100{% endif %} 
+                                    font-medium py-2.5 px-4 rounded-xl transition-all">
+                            <i class="ti {% if user.is_staff %}ti-user{% else %}ti-shield{% endif %}"></i>
+                            {% if user.is_staff %}حذف از مدیران{% else %}تبدیل به مدیر{% endif %}
+                        </button>
+                    </form>
+                    
+                    <!-- ارسال ایمیل -->
+                    <a href="mailto:{{ user.email }}?subject=پیام از Mobix" 
+                       class="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium py-2.5 px-4 rounded-xl transition-all">
+                        <i class="ti ti-mail"></i>
+                        ارسال ایمیل
+                    </a>
+                    
+                    <!-- حذف کاربر -->
+                    <form method="post" action="{% url 'delete_user' user.id %}" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                onclick="return confirm('آیا از حذف این کاربر مطمئنید؟ این عمل غیرقابل بازگشت است!')"
+                                class="w-full flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-100 font-medium py-2.5 px-4 rounded-xl transition-all">
+                            <i class="ti ti-trash"></i>
+                            حذف کاربر
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- کارت اطلاعات فنی -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">اطلاعات فنی</h3>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">ID کاربر:</span>
+                        <code class="bg-gray-100 px-2 py-1 rounded text-sm">{{ user.id }}</code>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">آخرین به‌روزرسانی:</span>
+                        <span class="font-medium">{{ user.profile.updated_at|date:"Y/m/d H:i" }}</span>
+                    </div>
+                </div>
+                
+                <!-- کپی ID -->
+                <button onclick="copyUserId()" 
+                        class="w-full mt-4 text-center text-sm text-gray-600 hover:text-gray-800 py-2 rounded-lg hover:bg-gray-50 transition">
+                    <i class="ti ti-copy ml-1"></i>
+                    کپی ID کاربر
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال کپی موفق -->
+<div id="copyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div class="p-6">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="ti ti-check text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2" id="copyModalTitle">کپی شد!</h3>
+                <p class="text-gray-600" id="copyModalMessage">محتوا با موفقیت کپی شد.</p>
+            </div>
+            <button onclick="closeCopyModal()" 
+                    class="w-full mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">
+                باشه
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== کپی لینک کاربر ====================
+function copyUserLink() {
+    const link = window.location.href;
+    navigator.clipboard.writeText(link).then(() => {
+        showCopyModal('لینک کپی شد', 'لینک صفحه کاربر در کلیپ‌بورد ذخیره شد.');
+    });
+}
+
+// ==================== کپی ID کاربر ====================
+function copyUserId() {
+    const userId = '{{ user.id }}';
+    navigator.clipboard.writeText(userId).then(() => {
+        showCopyModal('ID کپی شد', `شناسه کاربر ${userId} کپی شد.`);
+    });
+}
+
+// ==================== مدیریت مودال کپی ====================
+function showCopyModal(title, message) {
+    document.getElementById('copyModalTitle').textContent = title;
+    document.getElementById('copyModalMessage').textContent = message;
+    document.getElementById('copyModal').classList.remove('hidden');
+    document.getElementById('copyModal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    
+    // بستن خودکار بعد از 2 ثانیه
+    setTimeout(closeCopyModal, 2000);
+}
+
+function closeCopyModal() {
+    document.getElementById('copyModal').classList.add('hidden');
+    document.getElementById('copyModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+// ==================== بستن مودال با ESC ====================
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeCopyModal();
+    }
+});
+
+// ==================== بستن مودال با کلیک خارج ====================
+document.getElementById('copyModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeCopyModal();
+    }
+});
+</script>
+
+<style>
+/* استایل‌های سفارشی */
+code {
+    font-family: 'Vazir', monospace;
+    direction: ltr;
+}
+</style>
+{% endblock %}

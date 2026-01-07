@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ورود به حساب | Mobix{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="max-w-md w-full">
+        
+        <!-- هدر -->
+        <div class="text-center mb-10">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center shadow-lg">
+                <i class="ti ti-lock text-3xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-3">ورود به حساب کاربری</h1>
+            <p class="text-gray-600">لطفا اطلاعات حساب خود را وارد کنید</p>
+        </div>
+        
+        <!-- کارت فرم -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+            
+            <!-- نمایش پیام‌های خطا/موفقیت -->
+            {% if messages %}
+            <div class="mb-6 space-y-3">
+                {% for message in messages %}
+                <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} border">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- فرم ورود -->
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- فیلد نام کاربری -->
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">نام کاربری</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="text-red-600 text-sm mt-1">
+                        {{ form.username.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- فیلد رمز عبور -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-gray-700 font-medium">رمز عبور</label>
+                        <a href="#" class="text-sm text-blue-600 hover:text-blue-800 transition">
+                            فراموشی رمز عبور؟ (به زودی)
+                        </a>
+                    </div>
+                    <div class="relative">
+                        {{ form.password }}
+                        <button type="button" 
+                                onclick="togglePassword('id_password')"
+                                class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <i class="ti ti-eye text-xl" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="text-red-600 text-sm mt-1">
+                        {{ form.password.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- چک‌باکس یادآوری -->
+                <div class="flex items-center">
+                    {{ form.remember }}
+                    <label for="{{ form.remember.id_for_label }}" class="mr-2 text-gray-700">مرا به خاطر بسپار</label>
+                </div>
+                
+                <!-- دکمه ورود -->
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3.5 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                    <i class="ti ti-login ml-2"></i>
+                    ورود به حساب
+                </button>
+            </form>
+            
+            <!-- جداکننده -->
+            <div class="flex items-center my-8">
+                <div class="flex-1 border-t border-gray-300"></div>
+                <span class="px-4 text-gray-500 text-sm">یا</span>
+                <div class="flex-1 border-t border-gray-300"></div>
+            </div>
+            
+            <!-- دکمه ثبت‌نام -->
+            <div class="text-center">
+                <p class="text-gray-600 mb-4">حساب کاربری ندارید؟</p>
+                <a href="{% url 'register' %}" 
+                   class="inline-block w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3.5 px-8 rounded-xl transition-all">
+                    <i class="ti ti-user-plus ml-2"></i>
+                    ایجاد حساب جدید
+                </a>
+            </div>
+        </div>
+        
+        <!-- لینک‌های پایین -->
+        <div class="text-center mt-8">
+            <p class="text-gray-500 text-sm">
+                با ورود یا ثبت‌نام در Mobix، 
+                <a href="{% url 'privacy' %}" class="text-blue-600 hover:text-blue-800">قوانین و مقررات</a> 
+                را پذیرفته‌اید.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// نمایش/مخفی کردن رمز عبور
+function togglePassword(fieldId) {
+    const passwordInput = document.getElementById(fieldId);
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('ti-eye');
+        toggleIcon.classList.add('ti-eye-off');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('ti-eye-off');
+        toggleIcon.classList.add('ti-eye');
+    }
+}
+</script>
+{% endblock %}

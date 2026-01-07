@@ -1,0 +1,490 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}پنل مدیریت Mobix{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://v1.fontapi.ir/css/Vazir" rel="stylesheet">
+    
+    <!-- Custom Admin CSS -->
+    <style>
+        /* استایل‌های جدید و بهبود یافته */
+        
+        /* سایدبار اصلی */
+        .sidebar {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 16rem; /* 64 = 16rem */
+        }
+        
+        /* منوی آبشاری - انیمیشن نرم */
+        .submenu {
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(-10px);
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .submenu.active {
+            max-height: 500px;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* آیکون چرخش */
+        .submenu-arrow {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .submenu-arrow.active {
+            transform: rotate(180deg);
+        }
+        
+        /* آیتم‌های منو */
+        .menu-item {
+            transition: all 0.2s ease;
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* جلوگیری از تغییر عرض */
+        .sidebar-content {
+            width: 16rem;
+            min-width: 16rem;
+        }
+        
+        /* محتوای اصلی */
+        .content-area {
+            transition: margin-right 0.3s ease;
+        }
+        
+        /* Overlay برای موبایل */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            backdrop-filter: blur(2px);
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* انیمیشن باز شدن منو */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .submenu-item {
+            animation: slideInDown 0.3s ease-out;
+        }
+        
+        /* موبایل */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(100%);
+                position: fixed;
+                top: 0;
+                right: 0;
+                z-index: 50;
+                box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .content-area {
+                margin-right: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans" style="font-family: Vazir, sans-serif;">
+    
+    <!-- Overlay بهبود یافته -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="sidebar bg-gradient-to-b from-gray-900 to-gray-800 text-white fixed top-0 right-0 z-30" id="sidebar">
+            <div class="sidebar-content">
+                <!-- لوگو -->
+                <div class="p-6 border-b border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center ml-3">
+                            <i class="ti ti-layout-dashboard text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold">Mobix Admin</h1>
+                            <p class="text-gray-400 text-xs">پنل مدیریت</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- اطلاعات کاربر مدیر (بدون آواتار) -->
+                <div class="p-6 border-b border-gray-700">
+                    <div class="flex items-center">
+                        <div class="mr-3 flex-1">
+                            <p class="font-bold text-lg">{{ request.user.get_full_name|default:request.user.username }}</p>
+                            <p class="text-gray-400 text-sm mt-1">{{ request.user.email }}</p>
+                            <div class="flex items-center mt-2">
+                                <span class="w-2 h-2 bg-green-500 rounded-full ml-2"></span>
+                                <span class="text-green-400 text-sm">آنلاین</span>
+                                <span class="mr-auto text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">مدیر کل</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- منوی اصلی -->
+                <nav class="p-4">
+                    <ul class="space-y-1">
+                        <!-- پیشخوان -->
+                        <li class="menu-item">
+                            <a href="{% url 'admin_dashboard' %}" 
+                               class="flex items-center px-4 py-3 rounded-xl {% if request.path == '/dashboard/' %}bg-blue-900/30 text-blue-300{% else %}text-gray-300 hover:bg-gray-800/50 hover:text-white{% endif %} transition-all duration-200 group">
+                                <i class="ti ti-dashboard ml-3"></i>
+                                <span>پیشخوان</span>
+                                <i class="ti ti-chevron-left mr-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </a>
+                        </li>
+                        
+                        <!-- کاربران (منوی آبشاری) -->
+                        <li class="menu-item">
+                            <div class="cursor-pointer" onclick="toggleSubmenu('users-menu')">
+                                <div class="flex items-center justify-between px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-800/50 hover:text-white transition-all duration-200 
+                                    {% if 'users' in request.path or 'user' in request.path %}bg-blue-900/30 text-blue-300{% endif %}">
+                                    <div class="flex items-center">
+                                        <i class="ti ti-users ml-3"></i>
+                                        <span>کاربران</span>
+                                    </div>
+                                    <i class="ti ti-chevron-down submenu-arrow transition-all duration-400" id="users-arrow"></i>
+                                </div>
+                            </div>
+                            <ul class="submenu bg-gray-800/30 rounded-xl mt-1 mr-4" id="users-menu">
+                                <li class="submenu-item">
+                                    <a href="{% url 'users_list' %}" 
+                                    class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200 pr-8
+                                    {% if request.path == '/dashboard/users/' %}text-blue-300 bg-blue-900/30{% endif %}">
+                                        <i class="ti ti-list ml-3"></i>
+                                        لیست کاربران
+                                    </a>
+                                </li>
+                                <li class="submenu-item">
+                                    <a href="{% url 'add_user' %}" 
+                                    class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200 pr-8
+                                    {% if request.path == '/dashboard/users/add/' %}text-blue-300 bg-blue-900/30{% endif %}">
+                                        <i class="ti ti-user-plus ml-3"></i>
+                                        افزودن کاربر
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <!-- سفارشات -->
+                        <li class="menu-item">
+                            <a href="#" class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-800/50 hover:text-white transition-all duration-200 group">
+                                <i class="ti ti-shopping-cart ml-3"></i>
+                                <span>سفارشات</span>
+                                <span class="mr-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">۵ جدید</span>
+                            </a>
+                        </li>
+                        
+                        <!-- محصولات (منوی آبشاری) -->
+                        <li class="menu-item">
+                            <div class="cursor-pointer" onclick="toggleSubmenu('products-menu')">
+                                <div class="flex items-center justify-between px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-800/50 hover:text-white transition-all duration-200">
+                                    <div class="flex items-center">
+                                        <i class="ti ti-package ml-3"></i>
+                                        <span>محصولات</span>
+                                    </div>
+                                    <i class="ti ti-chevron-down submenu-arrow transition-all duration-400" id="products-arrow"></i>
+                                </div>
+                            </div>
+                            <ul class="submenu bg-gray-800/30 rounded-xl mt-1 mr-4" id="products-menu">
+                                <li class="submenu-item">
+                                    <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200 pr-8">
+                                        <i class="ti ti-plus ml-3"></i>
+                                        افزودن محصول جدید
+                                    </a>
+                                </li>
+                                <li class="submenu-item">
+                                    <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200 pr-8">
+                                        <i class="ti ti-list ml-3"></i>
+                                        همه محصولات
+                                    </a>
+                                </li>
+                                <li class="submenu-item">
+                                    <a href="#" class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200 pr-8">
+                                        <i class="ti ti-category ml-3"></i>
+                                        دسته‌بندی‌ها
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <!-- مقالات (منوی آبشاری) -->
+                        <li class="menu-item">
+                            <div class="cursor-pointer" onclick="toggleSubmenu('articles-menu')">
+                                <div class="flex items-center justify-between px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-800/50 hover:text-white transition-all duration-200
+                                    {% if 'blog' in request.path %}bg-blue-900/30 text-blue-300{% endif %}">
+                                    <div class="flex items-center">
+                                        <i class="ti ti-news ml-3"></i>
+                                        <span>مقالات</span>
+                                    </div>
+                                    <i class="ti ti-chevron-down submenu-arrow transition-all duration-400" id="articles-arrow"></i>
+                                </div>
+                            </div>
+                            <ul class="submenu bg-gray-800/30 rounded-xl mt-1 mr-4" id="articles-menu">
+                                <li class="submenu-item">
+                                    <a href="{% url 'blog_list' %}" 
+                                    class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200 pr-8
+                                    {% if request.path == '/dashboard/blog/' %}text-blue-300 bg-blue-900/30{% endif %}">
+                                        <i class="ti ti-list ml-3"></i>
+                                        لیست مقالات
+                                    </a>
+                                </li>
+                                <li class="submenu-item">
+                                    <a href="{% url 'blog_create' %}" 
+                                    class="flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200 pr-8
+                                    {% if request.path == '/dashboard/blog/add/' %}text-blue-300 bg-blue-900/30{% endif %}">
+                                        <i class="ti ti-plus ml-3"></i>
+                                        افزودن مقاله
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <!-- دیدگاه‌ها -->
+                        <li class="menu-item">
+                            <a href="{% url 'contact_messages_list' %}" 
+                            class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-800/50 hover:text-white transition-all duration-200 group 
+                            {% if 'contact-messages' in request.path %}bg-blue-900/30 text-blue-300{% endif %}">
+                                <i class="ti ti-messages ml-3"></i>
+                                <span>پیام‌های تماس</span>
+                                
+                                <!-- این بخش رو حتماً اضافه کنین -->
+                                {% if unread_messages_count > 0 %}
+                                <span class="mr-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                                    {{ unread_messages_count }}
+                                </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        
+                        <!-- گزارشات -->
+                        <li class="menu-item">
+                            <a href="#" class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-800/50 hover:text-white transition-all duration-200 group">
+                                <i class="ti ti-report-analytics ml-3"></i>
+                                <span>گزارشات</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- خروج -->
+                <div class="absolute bottom-0 w-full p-4 border-t border-gray-700">
+                    <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 rounded-xl text-red-300 hover:bg-red-900/30 hover:text-red-200 transition-all duration-200">
+                        <i class="ti ti-logout ml-3"></i>
+                        <span>خروج از پنل</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="content-area w-full min-h-screen lg:mr-64" id="contentArea">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <!-- دکمه منو برای موبایل -->
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-all">
+                        <i class="ti ti-menu-2 text-2xl text-gray-700"></i>
+                    </button>
+                    
+                    <!-- جستجو -->
+                    <div class="flex-1 max-w-2xl lg:mx-auto">
+                        <div class="relative">
+                            <input type="text" 
+                                   placeholder="جستجو در پنل مدیریت..." 
+                                   class="w-full bg-gray-50 border border-gray-300 rounded-xl pr-12 pl-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <button class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                <i class="ti ti-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- ناتیفیکیشن و پروفایل -->
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <!-- ناتیفیکیشن -->
+                        <div class="relative">
+                            <button onclick="toggleNotifications()" class="relative p-2 rounded-lg hover:bg-gray-100 transition-all">
+                                <i class="ti ti-bell text-xl text-gray-700"></i>
+                                <span class="absolute top-1 left-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                            </button>
+                        </div>
+                        
+                        <!-- کاربر -->
+                        <div class="flex items-center space-x-3 space-x-reverse">
+                            <div class="text-left">
+                                <p class="font-bold text-gray-800">{{ request.user.get_full_name|default:request.user.username }}</p>
+                                <p class="text-sm text-gray-500">مدیر سیستم</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="p-6">
+                {% block content %}
+                <!-- محتوای صفحه اینجا قرار می‌گیرد -->
+                {% endblock %}
+            </main>
+            
+            <!-- Footer -->
+            <footer class="bg-white border-t border-gray-200 py-4 px-6">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-600 text-sm">
+                        © 2024 Mobix. تمامی حقوق محفوظ است.
+                    </p>
+                    <div class="flex items-center space-x-4 space-x-reverse mt-2 md:mt-0">
+                        <span class="text-gray-500 text-sm">
+                            <i class="ti ti-device-desktop ml-1"></i>
+                            پنل مدیریت Mobix v1.0
+                        </span>
+                        <div class="flex items-center">
+                            <span class="w-2 h-2 bg-green-500 rounded-full ml-2"></span>
+                            <span class="text-green-600 text-sm">آنلاین</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- JavaScript بهبود یافته -->
+    <script>
+    // ==================== مدیریت سایدبار ====================
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const content = document.getElementById('contentArea');
+        
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        if (window.innerWidth < 1024) {
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+        }
+    }
+    
+    // ==================== مدیریت منوهای آبشاری ====================
+    function toggleSubmenu(menuId) {
+        const submenu = document.getElementById(menuId);
+        const arrowId = menuId.replace('-menu', '-arrow');
+        const arrow = document.getElementById(arrowId);
+        
+        // بستن سایر منوهای باز
+        document.querySelectorAll('.submenu').forEach(otherMenu => {
+            if (otherMenu.id !== menuId && otherMenu.classList.contains('active')) {
+                otherMenu.classList.remove('active');
+                const otherArrowId = otherMenu.id.replace('-menu', '-arrow');
+                const otherArrow = document.getElementById(otherArrowId);
+                if (otherArrow) otherArrow.classList.remove('active');
+            }
+        });
+        
+        // باز/بستن منوی جاری
+        submenu.classList.toggle('active');
+        if (arrow) arrow.classList.toggle('active');
+    }
+    
+    // ==================== مدیریت ناتیفیکیشن ====================
+    function toggleNotifications() {
+        const panel = document.getElementById('notificationsPanel');
+        if (panel) {
+            panel.classList.toggle('hidden');
+        }
+    }
+    
+    // ==================== مدیریت کلیک خارج ====================
+    document.addEventListener('click', function(event) {
+        // اگر روی منوی آبشاری کلیک نشده
+        if (!event.target.closest('.menu-item') && !event.target.closest('.submenu')) {
+            document.querySelectorAll('.submenu').forEach(submenu => {
+                submenu.classList.remove('active');
+            });
+            document.querySelectorAll('.submenu-arrow').forEach(arrow => {
+                arrow.classList.remove('active');
+            });
+        }
+    });
+    
+    // ==================== مدیریت رزولوشن ====================
+    function handleResize() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    // ==================== رویدادها ====================
+    window.addEventListener('resize', handleResize);
+    
+    // بستن سایدبار با کلیک روی لینک (در موبایل)
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        });
+    });
+    
+    // ==================== بارگذاری اولیه ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        handleResize();
+        
+        // انیمیشن fade-in برای عناصر
+        document.querySelectorAll('.fade-in').forEach(el => {
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.style.transition = 'opacity 0.5s ease';
+                el.style.opacity = '1';
+            }, 50);
+        });
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
